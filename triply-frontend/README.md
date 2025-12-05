@@ -1,112 +1,73 @@
-# Triply Frontend (React)
+# Welcome to your Lovable project
 
-This is the React.js frontend for the Triply ride-sharing application, converted from Angular.
+## Project info
 
-## Features
+**URL**: https://lovable.dev/projects/09dbc17b-b5c3-4c97-93d8-048c5aa1075c
 
-- **User Authentication**: Login and registration with JWT token management
-- **Role-based Access**: Support for Passengers, Drivers, and Admins
-- **Ride Search & Booking**: Search for available rides with filters
-- **Driver Features**: Post new rides with optional coordinates
-- **Admin Dashboard**: Comprehensive user and ride management
+## How can I edit this code?
 
-## Tech Stack
+There are several ways of editing your application.
 
-- React 18
-- React Router DOM for routing
-- Axios for HTTP requests
-- Vite for build tooling
-- CSS for styling
+**Use Lovable**
 
-## Getting Started
+Simply visit the [Lovable Project](https://lovable.dev/projects/09dbc17b-b5c3-4c97-93d8-048c5aa1075c) and start prompting.
 
-### Prerequisites
+Changes made via Lovable will be committed automatically to this repo.
 
-- Node.js (v16 or higher)
-- npm
+**Use your preferred IDE**
 
-### Installation
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-```bash
-npm install
-```
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-### Development
+Follow these steps:
 
-Run the development server:
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-```bash
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
-The application will be available at `http://localhost:4200`
+**Edit a file directly in GitHub**
 
-### Build
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-Build for production:
+**Use GitHub Codespaces**
 
-```bash
-npm run build
-```
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-### Preview Production Build
+## What technologies are used for this project?
 
-```bash
-npm run preview
-```
+This project is built with:
 
-## Project Structure
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-```
-src/
-├── layouts/
-│   └── AuthLayout/          # Layout for login/register pages
-├── pages/
-│   ├── Home/                # Landing page
-│   ├── Login/               # Login page
-│   ├── Register/            # Registration page
-│   ├── Dashboard/           # User dashboard with ride search
-│   ├── PostRide/            # Driver ride posting page
-│   └── AdminDashboard/      # Admin management panel
-├── services/
-│   ├── authService.js       # Authentication service
-│   ├── axiosConfig.js       # Axios interceptor for JWT
-│   └── onboardingService.js # User onboarding utilities
-├── App.jsx                  # Main app component with routing
-├── main.jsx                 # Application entry point
-└── index.css                # Global styles
-```
+## How can I deploy this project?
 
-## API Integration
+Simply open [Lovable](https://lovable.dev/projects/09dbc17b-b5c3-4c97-93d8-048c5aa1075c) and click on Share -> Publish.
 
-The frontend connects to the Spring Boot backend at `http://localhost:8080/api`
+## Can I connect a custom domain to my Lovable project?
 
-### Endpoints Used
+Yes, you can!
 
-- `/api/auth/login` - User login
-- `/api/auth/register` - User registration
-- `/api/rides` - Get all rides
-- `/api/rides/search` - Search rides with filters
-- `/api/rides/post` - Post a new ride (drivers only)
-- `/api/bookings/book` - Book a ride
-- `/api/admin/*` - Admin endpoints
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-## User Roles
-
-1. **ROLE_PASSENGER**: Can search and book rides
-2. **ROLE_DRIVER**: Can search, book, and post rides
-3. **ROLE_ADMIN**: Full access to user and ride management
-
-## Conversion from Angular
-
-This React application is a complete conversion of the Angular frontend with:
-- All components converted to React functional components with hooks
-- Angular services converted to JavaScript modules
-- Angular routing converted to React Router
-- SCSS styles converted to CSS
-- Two-way binding replaced with useState hooks
-- RxJS observables replaced with async/await and axios
-
-## License
-
-ISC
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
