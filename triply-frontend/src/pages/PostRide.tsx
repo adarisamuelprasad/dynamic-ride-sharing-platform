@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { authService } from "@/services/authService";
+import { rideService } from "@/services/rideService";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,26 @@ const PostRide = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!authService.isLoggedIn()) {
+      navigate("/login?redirect=/post-ride");
+      return;
+    }
+
+    const user = authService.currentUser;
+    if (user?.role === "ROLE_ADMIN") {
+      toast.error("Admins cannot participate in ride sharing activities.");
+      navigate("/dashboard");
+      return;
+    }
+
+    if (user?.role !== "ROLE_DRIVER") {
+      toast.error("Only drivers can post rides. Please register as a driver.");
+      navigate("/dashboard");
+      return;
+    }
+  }, [navigate]);
+
   const update = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -26,12 +48,20 @@ const PostRide = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate posting ride
-    setTimeout(() => {
+    try {
+      await rideService.postRide({
+        ...form,
+        availableSeats: parseInt(form.availableSeats),
+        farePerSeat: parseFloat(form.farePerSeat)
+      });
       setLoading(false);
       toast.success("Ride posted successfully!");
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast.error("Failed to post ride. Please try again.");
+    }
   };
 
   return (

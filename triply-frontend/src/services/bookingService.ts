@@ -1,7 +1,7 @@
 import axios from './axiosConfig';
 import { Ride } from './rideService';
 
-const API_BASE = 'http://localhost:8080/api/bookings';
+const API_BASE = 'http://localhost:8081/api/bookings';
 
 export interface Booking {
     id: number;

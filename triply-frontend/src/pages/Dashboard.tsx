@@ -1,87 +1,109 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import RideCard from "@/components/RideCard";
 import BookingCard from "@/components/BookingCard";
 import { Search, MapPin, Calendar, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-
-// Mock data
-const mockRides = [
-  {
-    id: 1,
-    source: "Mumbai",
-    destination: "Pune",
-    departureTime: "2024-12-20T09:00:00",
-    availableSeats: 3,
-    farePerSeat: 450,
-    driver: { name: "Ranvitha", vehicleModel: "Honda City" },
-  },
-  {
-    id: 2,
-    source: "Delhi",
-    destination: "Jaipur",
-    departureTime: "2024-12-21T07:30:00",
-    availableSeats: 2,
-    farePerSeat: 650,
-    driver: { name: "Amit", vehicleModel: "Maruti Swift" },
-  },
-  {
-    id: 3,
-    source: "Bangalore",
-    destination: "Mysore",
-    departureTime: "2024-12-22T06:00:00",
-    availableSeats: 4,
-    farePerSeat: 300,
-    driver: { name: "Priya", vehicleModel: "Toyota Innova" },
-  },
-];
-
-const mockBookings = [
-  {
-    id: 101,
-    seatsBooked: 2,
-    status: "CONFIRMED" as const,
-    ride: { source: "Mumbai", destination: "Pune" },
-    passenger: { name: "Vibha" },
-  },
-  {
-    id: 102,
-    seatsBooked: 1,
-    status: "PENDING" as const,
-    ride: { source: "Chennai", destination: "Coimbatore" },
-    passenger: { name: "Vibha" },
-  },
-];
+import { rideService, Ride } from "@/services/rideService";
+import { bookingService, Booking } from "@/services/bookingService";
+import { authService } from "@/services/authService";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [search, setSearch] = useState({ source: "", destination: "", date: "" });
-  const [results, setResults] = useState(mockRides);
+  const [rides, setRides] = useState<Ride[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(authService.isLoggedIn());
+  const navigate = useNavigate();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // Simulate search
-    setTimeout(() => {
-      const filtered = mockRides.filter((ride) => {
-        const matchSource = !search.source || 
-          ride.source.toLowerCase().includes(search.source.toLowerCase());
-        const matchDest = !search.destination || 
-          ride.destination.toLowerCase().includes(search.destination.toLowerCase());
-        return matchSource && matchDest;
-      });
-      setResults(filtered);
-      setLoading(false);
-      toast.success(`Found ${filtered.length} rides`);
-    }, 500);
+  const fetchRides = async (searchParams?: any) => {
+    try {
+      const data = await rideService.searchRides(searchParams || { source: search.source, destination: search.destination });
+      setRides(data);
+    } catch (error) {
+      console.error("Failed to fetch rides", error);
+    }
   };
 
-  const handleBook = (ride: typeof mockRides[0]) => {
-    toast.success(`Booking confirmed for ${ride.source} → ${ride.destination}`);
+  const fetchBookings = async () => {
+    try {
+      const data = await bookingService.getMyBookings();
+      setBookings(data);
+    } catch (error) {
+      console.error("Failed to fetch bookings", error);
+    }
+  };
+
+  useEffect(() => {
+    // Initial fetch of rides
+    fetchRides({});
+
+    // Subscribe to auth state changes
+    const unsubscribe = authService.subscribe((user) => {
+      const loggedIn = !!user;
+      setIsLoggedIn(loggedIn);
+      if (loggedIn) {
+        fetchBookings();
+      } else {
+        setBookings([]);
+      }
+    });
+
+    if (authService.isLoggedIn()) {
+      fetchBookings();
+    }
+
+    return unsubscribe;
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const searchParams: any = {
+        source: search.source,
+        destination: search.destination
+      };
+      if (search.date) {
+        searchParams.date = search.date;
+      }
+
+      const allRides = await rideService.searchRides(searchParams);
+
+      // Client side date filtering if API doesn't fully support it yet or for exact match
+      let filtered = allRides;
+      if (search.date) {
+        filtered = allRides.filter(r => r.departureTime.startsWith(search.date));
+      }
+      setRides(filtered);
+
+      toast.success(`Found ${filtered.length} rides`);
+    } catch (error) {
+      toast.error("Failed to search rides");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBook = async (ride: Ride) => {
+    if (!isLoggedIn) {
+      toast.error("Please login to book a ride");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await bookingService.bookRide(ride.id, 1); // Default to 1 seat
+      toast.success(`Booking confirmed for ${ride.source} → ${ride.destination}`);
+      fetchBookings(); // Refresh bookings
+      fetchRides(); // Refresh rides (seat count updates)
+    } catch (error) {
+      toast.error("Failed to book ride");
+    }
   };
 
   return (
@@ -163,15 +185,15 @@ const Dashboard = () => {
           <Sparkles className="h-5 w-5 text-primary" />
           <h2 className="font-display text-xl font-bold text-foreground">Available Rides</h2>
           <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-            {results.length}
+            {rides.length}
           </span>
         </div>
-        
-        {results.length > 0 ? (
+
+        {rides.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((ride, index) => (
-              <div 
-                key={ride.id} 
+            {rides.map((ride, index) => (
+              <div
+                key={ride.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -186,27 +208,32 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* My Bookings */}
-      <div>
-        <h2 className="mb-4 font-display text-xl font-bold text-foreground">My Bookings</h2>
-        {mockBookings.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {mockBookings.map((booking, index) => (
-              <div 
-                key={booking.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <BookingCard booking={booking} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <Card glass className="p-8 text-center">
-            <p className="text-muted-foreground">No bookings yet. Find a ride above!</p>
-          </Card>
-        )}
-      </div>
+      {/* My Bookings - Only visible if logged in */}
+      {isLoggedIn && (
+        <div className="animate-fade-in">
+          <h2 className="mb-4 font-display text-xl font-bold text-foreground">My Bookings</h2>
+          {bookings.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {bookings.map((booking, index) => (
+                <div
+                  key={booking.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <BookingCard booking={{
+                    ...booking,
+                    status: booking.status as "CONFIRMED" | "PENDING" | "CANCELLED"
+                  }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Card glass className="p-8 text-center">
+              <p className="text-muted-foreground">No bookings yet. Find a ride above!</p>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 };

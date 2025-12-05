@@ -1,6 +1,6 @@
 import axios from './axiosConfig';
 
-const API_BASE = 'http://localhost:8080/api/rides';
+const API_BASE = 'http://localhost:8081/api/rides';
 
 export interface Ride {
     id: number;

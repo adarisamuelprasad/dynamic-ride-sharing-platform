@@ -2,7 +2,7 @@ import axios from './axiosConfig';
 import { Ride } from './rideService';
 import { Booking } from './bookingService';
 
-const API_BASE = 'http://localhost:8080/api/admin';
+const API_BASE = 'http://localhost:8081/api/admin';
 
 export interface User {
     id: number;

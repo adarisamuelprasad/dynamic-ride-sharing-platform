@@ -16,11 +16,15 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:8080", allowCredentials = "true")
 public class AuthController {
 
-    @Autowired private UserService userService;
-    @Autowired private UserRepository repo;
-    @Autowired private JwtUtil jwt;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UserRepository repo;
+    @Autowired
+    private JwtUtil jwt;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest r) {
@@ -48,15 +52,16 @@ public class AuthController {
         String token = jwt.generateToken(saved.getEmail(), saved.getId(), saved.getRole().name());
 
         return ResponseEntity.ok(
-                new JwtResponse(token, "Bearer", saved.getId(), saved.getEmail(), saved.getRole().name(), saved.getName())
-        );
+                new JwtResponse(token, "Bearer", saved.getId(), saved.getEmail(), saved.getRole().name(),
+                        saved.getName()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest r) {
 
         Optional<User> u = repo.findByEmail(r.getEmail());
-        if (u.isEmpty()) return ResponseEntity.status(401).body("Invalid credentials");
+        if (u.isEmpty())
+            return ResponseEntity.status(401).body("Invalid credentials");
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         if (!encoder.matches(r.getPassword(), u.get().getPassword()))
@@ -66,7 +71,6 @@ public class AuthController {
         String token = jwt.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 
         return ResponseEntity.ok(
-                new JwtResponse(token, "Bearer", user.getId(), user.getEmail(), user.getRole().name(), user.getName())
-        );
+                new JwtResponse(token, "Bearer", user.getId(), user.getEmail(), user.getRole().name(), user.getName()));
     }
 }

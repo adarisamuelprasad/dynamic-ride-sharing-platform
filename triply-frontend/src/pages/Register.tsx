@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Car, Mail, Lock, User, Phone, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
+import { authService } from "@/services/authService";
+
 const Register = () => {
   const [form, setForm] = useState({
     name: "",
@@ -29,12 +31,22 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate registration - in real app, this would call your auth service
-    setTimeout(() => {
+    try {
+      await authService.register({
+        ...form,
+        role: form.role as "PASSENGER" | "DRIVER",
+        capacity: form.role === 'DRIVER' ? parseInt(form.capacity) : undefined
+      });
       setLoading(false);
       toast.success("Account created successfully!");
+      // Register automatically logs in, so we go to dashboard
       navigate("/dashboard");
-    }, 1000);
+    } catch (error: any) {
+      setLoading(false);
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data || 'Failed to create account. Please try again.';
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -127,11 +139,10 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => update("role", "PASSENGER")}
-                    className={`rounded-lg border p-4 text-left transition-all ${
-                      form.role === "PASSENGER"
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-muted/30 hover:border-muted-foreground/30"
-                    }`}
+                    className={`rounded-lg border p-4 text-left transition-all ${form.role === "PASSENGER"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted/30 hover:border-muted-foreground/30"
+                      }`}
                   >
                     <p className="font-semibold text-foreground">Find Rides</p>
                     <p className="text-xs text-muted-foreground">As a passenger</p>
@@ -139,11 +150,10 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => update("role", "DRIVER")}
-                    className={`rounded-lg border p-4 text-left transition-all ${
-                      form.role === "DRIVER"
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-muted/30 hover:border-muted-foreground/30"
-                    }`}
+                    className={`rounded-lg border p-4 text-left transition-all ${form.role === "DRIVER"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted/30 hover:border-muted-foreground/30"
+                      }`}
                   >
                     <p className="font-semibold text-foreground">Offer Rides</p>
                     <p className="text-xs text-muted-foreground">As a driver</p>

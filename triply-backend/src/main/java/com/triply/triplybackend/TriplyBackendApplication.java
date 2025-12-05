@@ -25,83 +25,162 @@ public class TriplyBackendApplication {
     CommandLineRunner seed(
             @Autowired UserRepository users,
             @Autowired RideRepository rides,
-            @Autowired BCryptPasswordEncoder encoder
-    ) {
+            @Autowired com.triply.triplybackend.repository.BookingRepository bookings,
+            @Autowired BCryptPasswordEncoder encoder) {
         return args -> {
+            // --- 1. USERS ---
+
+            // Admin
             if (users.findByEmail("admin@example.com").isEmpty()) {
                 User admin = new User();
                 admin.setEmail("admin@example.com");
-                admin.setPassword(encoder.encode("Admin123!"));
-                admin.setName("Admin");
+                admin.setPassword(encoder.encode("admin"));
+                admin.setName("Super Admin");
                 admin.setRole(ERole.ROLE_ADMIN);
                 users.save(admin);
             }
 
-            users.findByEmail("vibha@example.com").orElseGet(() -> {
+            // Driver 1: Samuel
+            User samuel = users.findByEmail("samuel@driver.com").orElseGet(() -> {
                 User u = new User();
-                u.setEmail("vibha@example.com");
-                u.setPassword(encoder.encode("Password123!"));
-                u.setName("Vibha");
-                u.setPhone("9000000001");
-                u.setRole(ERole.ROLE_PASSENGER);
-                return users.save(u);
-            });
-
-            User ranvitha = users.findByEmail("ranvitha@example.com").orElseGet(() -> {
-                User u = new User();
-                u.setEmail("ranvitha@example.com");
-                u.setPassword(encoder.encode("Password123!"));
-                u.setName("Ranvitha");
-                u.setPhone("9000000002");
+                u.setEmail("samuel@driver.com");
+                u.setPassword(encoder.encode("password"));
+                u.setName("Samuel Prasad");
+                u.setPhone("9876543210");
                 u.setRole(ERole.ROLE_DRIVER);
-                u.setVehicleModel("Hyundai i20");
-                u.setLicensePlate("KA-09-7777");
-                u.setCapacity(3);
+                u.setVehicleModel("Toyota Innova Crysta");
+                u.setLicensePlate("KA-01-AB-1234");
+                u.setCapacity(6);
                 u.setDriverVerified(true);
                 return users.save(u);
             });
 
-            users.findByEmail("alice@example.com").orElseGet(() -> {
+            // Driver 2: Sarah
+            User sarah = users.findByEmail("sarah@driver.com").orElseGet(() -> {
                 User u = new User();
-                u.setEmail("alice@example.com");
-                u.setPassword(encoder.encode("Password123!"));
-                u.setName("Alice");
-                u.setPhone("9000000003");
+                u.setEmail("sarah@driver.com");
+                u.setPassword(encoder.encode("password"));
+                u.setName("Sarah Jones");
+                u.setPhone("9876543211");
+                u.setRole(ERole.ROLE_DRIVER);
+                u.setVehicleModel("Honda City");
+                u.setLicensePlate("MH-02-XY-9876");
+                u.setCapacity(4);
+                u.setDriverVerified(false);
+                return users.save(u);
+            });
+
+            // Passenger 1: John
+            User john = users.findByEmail("john@passenger.com").orElseGet(() -> {
+                User u = new User();
+                u.setEmail("john@passenger.com");
+                u.setPassword(encoder.encode("password"));
+                u.setName("John Doe");
                 u.setRole(ERole.ROLE_PASSENGER);
                 return users.save(u);
             });
 
-            User bob = users.findByEmail("bob@example.com").orElseGet(() -> {
+            // Passenger 2: Emily
+            User emily = users.findByEmail("emily@passenger.com").orElseGet(() -> {
                 User u = new User();
-                u.setEmail("bob@example.com");
-                u.setPassword(encoder.encode("Password123!"));
-                u.setName("Bob");
-                u.setPhone("9000000004");
-                u.setRole(ERole.ROLE_DRIVER);
-                u.setVehicleModel("Maruti Swift");
-                u.setLicensePlate("MH-12-1234");
-                u.setCapacity(4);
+                u.setEmail("emily@passenger.com");
+                u.setPassword(encoder.encode("password"));
+                u.setName("Emily Blunt");
+                u.setRole(ERole.ROLE_PASSENGER);
                 return users.save(u);
             });
 
-            if (rides.count() == 0) {
-                Ride r1 = new Ride();
-                r1.setSource("Mumbai");
-                r1.setDestination("Pune");
-                r1.setDepartureTime(LocalDateTime.now().plusDays(1).withHour(9).withMinute(0));
-                r1.setAvailableSeats(3);
-                r1.setFarePerSeat(500);
-                r1.setDriver(ranvitha);
-                rides.save(r1);
+            // --- 2. RIDES ---
 
+            // Only seed initial rides if DB is empty-ish
+            if (rides.count() < 3) {
+                // Ride 1
+                Ride r1 = new Ride();
+                r1.setSource("Bangalore");
+                r1.setDestination("Mysore");
+                r1.setDepartureTime(LocalDateTime.now().plusDays(1).withHour(8).withMinute(30));
+                r1.setAvailableSeats(4);
+                r1.setFarePerSeat(450.00);
+                r1.setDriver(samuel);
+                r1 = rides.save(r1);
+
+                // Ride 2
                 Ride r2 = new Ride();
-                r2.setSource("Bengaluru");
-                r2.setDestination("Mysuru");
-                r2.setDepartureTime(LocalDateTime.now().plusDays(2).withHour(16).withMinute(0));
+                r2.setSource("Mumbai");
+                r2.setDestination("Pune");
+                r2.setDepartureTime(LocalDateTime.now().plusDays(2).withHour(10).withMinute(0));
                 r2.setAvailableSeats(4);
-                r2.setFarePerSeat(450);
-                r2.setDriver(bob);
+                r2.setFarePerSeat(800.00);
+                r2.setDriver(sarah);
                 rides.save(r2);
+
+                // Ride 3
+                Ride r3 = new Ride();
+                r3.setSource("Chennai");
+                r3.setDestination("Pondicherry");
+                r3.setDepartureTime(LocalDateTime.now().plusHours(5));
+                r3.setAvailableSeats(6);
+                r3.setFarePerSeat(600.00);
+                r3.setDriver(samuel);
+                rides.save(r3);
+
+                // bookings for these rides
+                if (bookings.count() == 0) {
+                    com.triply.triplybackend.model.Booking b1 = new com.triply.triplybackend.model.Booking();
+                    b1.setPassenger(john);
+                    b1.setRide(r1);
+                    b1.setSeatsBooked(1);
+                    b1.setStatus("CONFIRMED");
+                    bookings.save(b1);
+
+                    com.triply.triplybackend.model.Booking b2 = new com.triply.triplybackend.model.Booking();
+                    b2.setPassenger(emily);
+                    b2.setRide(r1);
+                    b2.setSeatsBooked(1);
+                    b2.setStatus("PENDING");
+                    bookings.save(b2);
+                }
+            }
+
+            // --- 3. ADDITIONAL 8 DRIVERS & RIDES ---
+            // Create these only if we don't have enough users (prevent duplicates)
+            if (users.count() < 12) {
+                String[] sources = { "Delhi", "Hyderabad", "Kolkata", "Ahmedabad", "Surat", "Pune", "Jaipur",
+                        "Lucknow" };
+                String[] destinations = { "Agra", "Warangal", "Durgapur", "Vadodara", "Vapi", "Nasik", "Ajmer",
+                        "Kanpur" };
+                String[] models = { "Maruti Suzuki Swift", "Hyundai Creta", "Tata Nexon", "Kia Seltos",
+                        "Mahindra XUV700", "MG Hector", "Toyota Fortuner", "Renault Duster" };
+                int[] prices = { 400, 500, 350, 450, 300, 600, 550, 250 };
+
+                for (int i = 0; i < 8; i++) {
+                    int finalI = i;
+                    String email = "driver" + (i + 1) + "@triply.com";
+
+                    User driver = users.findByEmail(email).orElseGet(() -> {
+                        User u = new User();
+                        u.setEmail(email);
+                        u.setPassword(encoder.encode("password"));
+                        u.setName("Driver " + (finalI + 1));
+                        u.setPhone("900000000" + finalI);
+                        u.setRole(ERole.ROLE_DRIVER);
+                        u.setVehicleModel(models[finalI]);
+                        u.setLicensePlate("TR-0" + (finalI + 1) + "-X-" + (1000 + finalI));
+                        u.setCapacity(4);
+                        u.setDriverVerified(true);
+                        return users.save(u);
+                    });
+
+                    // Create ride for this driver
+                    Ride ride = new Ride();
+                    ride.setSource(sources[i]);
+                    ride.setDestination(destinations[i]);
+                    ride.setDepartureTime(LocalDateTime.now().plusDays(i + 1).withHour(8 + i));
+                    ride.setAvailableSeats(3);
+                    ride.setFarePerSeat((double) prices[i]);
+                    ride.setDriver(driver);
+                    rides.save(ride);
+                }
             }
         };
     }

@@ -12,4 +12,10 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
     List<Ride> findBySourceIgnoreCaseAndDestinationIgnoreCaseAndDepartureTimeBetween(
             String source, String destination, LocalDateTime start, LocalDateTime end);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT r.source FROM Ride r")
+    List<String> findDistinctSources();
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT r.destination FROM Ride r")
+    List<String> findDistinctDestinations();
 }

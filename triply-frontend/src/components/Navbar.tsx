@@ -1,11 +1,26 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { authService } from "../services/authService";
 
 const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(authService.currentUser);
+
+  useEffect(() => {
+    // Subscribe to auth changes
+    const unsubscribe = authService.subscribe((u) => {
+      setUser(u);
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleLogout = () => {
+    authService.logout();
+    window.location.href = '/'; // Hard redirect to clear any state if needed, or use navigate('/')
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -48,20 +63,43 @@ const Navbar = () => {
               Offer Ride
             </Button>
           </Link>
+          {user?.role === 'ROLE_ADMIN' && (
+            <Link to="/admin">
+              <Button
+                variant={isActive("/admin") ? "glass" : "ghost"}
+                size="sm"
+              >
+                Admin Dashboard
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Auth Buttons */}
         <div className="hidden items-center gap-3 md:flex">
-          <Link to="/login">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="gradient" size="sm">
-              Get Started
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <span className="text-sm font-medium text-muted-foreground mr-2">
+                Hello, {user.name}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="gradient" size="sm">
+                  Get Started
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -91,17 +129,33 @@ const Navbar = () => {
               Offer Ride
             </Button>
           </Link>
-          <div className="mt-2 flex gap-2">
-            <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full">
-                Sign In
+          {user?.role === 'ROLE_ADMIN' && (
+            <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Admin Dashboard
               </Button>
             </Link>
-            <Link to="/register" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="gradient" className="w-full">
-                Get Started
+          )}
+
+          <div className="mt-2 flex gap-2 flex-col">
+            {user ? (
+              <Button variant="outline" className="w-full" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
+                Logout ({user.name})
               </Button>
-            </Link>
+            ) : (
+              <div className="flex gap-2">
+                <Link to="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="gradient" className="w-full">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

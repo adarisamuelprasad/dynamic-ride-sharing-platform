@@ -1,6 +1,6 @@
 import axios from './axiosConfig';
 
-const API_BASE = 'http://localhost:8080/api/auth';
+const API_BASE = 'http://localhost:8081/api/auth';
 
 interface LoginRequest {
     email: string;
@@ -38,12 +38,28 @@ export const authService = {
         }
     },
 
+    listeners: [] as ((user: AuthResponse | null) => void)[],
+
+    subscribe(listener: (user: AuthResponse | null) => void) {
+        this.listeners.push(listener);
+        // Call immediately with current state
+        listener(this.currentUser);
+        return () => {
+            this.listeners = this.listeners.filter(l => l !== listener);
+        };
+    },
+
+    notify() {
+        this.listeners.forEach(l => l(this.currentUser));
+    },
+
     async login(email: string, password: string): Promise<AuthResponse> {
         const response = await axios.post<AuthResponse>(`${API_BASE}/login`, { email, password });
         const data = response.data;
         localStorage.setItem('triply_token', data.token);
         localStorage.setItem('triply_user', JSON.stringify(data));
         this.currentUser = data;
+        this.notify();
         return data;
     },
 
@@ -53,6 +69,7 @@ export const authService = {
         localStorage.setItem('triply_token', data.token);
         localStorage.setItem('triply_user', JSON.stringify(data));
         this.currentUser = data;
+        this.notify();
         return data;
     },
 
@@ -60,6 +77,7 @@ export const authService = {
         localStorage.removeItem('triply_token');
         localStorage.removeItem('triply_user');
         this.currentUser = null;
+        this.notify();
     },
 
     isLoggedIn(): boolean {

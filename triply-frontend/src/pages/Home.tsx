@@ -3,7 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Shield, Wallet, MapPin, ArrowRight, Sparkles } from "lucide-react";
 
+import { useEffect, useState } from "react";
+import axios from "@/services/axiosConfig";
+
 const Home = () => {
+  const [stats, setStats] = useState({
+    activeRiders: "0",
+    ridesShared: "0",
+    cities: "0"
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8081/api/public/stats');
+        setStats({
+          activeRiders: response.data.activeRiders.toString(),
+          ridesShared: response.data.ridesShared.toString(),
+          cities: response.data.cities.toString()
+        });
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const features = [
     {
       icon: Search,
@@ -48,7 +73,7 @@ const Home = () => {
               </h1>
 
               <p className="text-lg text-muted-foreground">
-                Triply connects drivers with empty seats to passengers heading the same way. 
+                Triply connects drivers with empty seats to passengers heading the same way.
                 Post rides as a driver or search and book as a passenger.
               </p>
 
@@ -69,15 +94,15 @@ const Home = () => {
               {/* Stats */}
               <div className="flex gap-8 pt-4">
                 <div>
-                  <p className="font-display text-3xl font-bold text-foreground">10K+</p>
+                  <p className="font-display text-3xl font-bold text-foreground">{stats.activeRiders}+</p>
                   <p className="text-sm text-muted-foreground">Active Riders</p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl font-bold text-foreground">50K+</p>
+                  <p className="font-display text-3xl font-bold text-foreground">{stats.ridesShared}+</p>
                   <p className="text-sm text-muted-foreground">Rides Shared</p>
                 </div>
                 <div>
-                  <p className="font-display text-3xl font-bold text-foreground">100+</p>
+                  <p className="font-display text-3xl font-bold text-foreground">{stats.cities}+</p>
                   <p className="text-sm text-muted-foreground">Cities</p>
                 </div>
               </div>
@@ -194,7 +219,7 @@ const Home = () => {
       <footer className="border-t border-border px-4 py-8">
         <div className="mx-auto max-w-6xl text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 Triply. Smart ride-sharing for everyone.
+            © 2025 Triply. Smart ride-sharing for everyone.
           </p>
         </div>
       </footer>

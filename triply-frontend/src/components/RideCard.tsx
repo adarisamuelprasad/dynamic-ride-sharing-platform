@@ -91,8 +91,8 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
           </p>
         )}
 
-        {/* Book Button */}
-        {onBook && (
+        {/* Book Button - Hidden for Admins */}
+        {onBook && authService.currentUser?.role !== 'ROLE_ADMIN' && (
           <Button
             variant="gradient"
             className="w-full"
