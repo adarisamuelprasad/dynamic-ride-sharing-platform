@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
+                                "/api/rides",
                                 "/h2-console/**",
                                 "/error")
                         .permitAll()

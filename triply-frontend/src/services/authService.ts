@@ -86,6 +86,10 @@ export const authService = {
 
     getToken(): string | null {
         return localStorage.getItem('triply_token');
+    },
+
+    async updatePassword(data: any) {
+        return await axios.put('http://localhost:8081/api/user/password', data);
     }
 };
 

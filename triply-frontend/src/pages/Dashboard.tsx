@@ -96,6 +96,12 @@ const Dashboard = () => {
       return;
     }
 
+    const currentUser = authService.currentUser;
+    if (currentUser?.role === 'ROLE_DRIVER' || currentUser?.role === 'DRIVER') {
+      toast.error("Drivers cannot book rides. Please log in as a Passenger to book.");
+      return;
+    }
+
     try {
       await bookingService.bookRide(ride.id, 1); // Default to 1 seat
       toast.success(`Booking confirmed for ${ride.source} → ${ride.destination}`);
