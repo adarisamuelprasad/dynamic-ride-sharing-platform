@@ -40,9 +40,23 @@ public class AuthController {
 
         if (r.getRole().equalsIgnoreCase("DRIVER")) {
             u.setRole(ERole.ROLE_DRIVER);
+
+            // Legacy support
             u.setVehicleModel(r.getVehicleModel());
             u.setLicensePlate(r.getLicensePlate());
             u.setCapacity(r.getCapacity());
+
+            // Create new Vehicle entity
+            Vehicle v = new Vehicle();
+            v.setModel(r.getVehicleModel());
+            v.setPlateNumber(r.getLicensePlate());
+            v.setCapacity(r.getCapacity());
+            v.setAcAvailable(r.getAcAvailable() != null ? r.getAcAvailable() : false);
+            v.setSunroofAvailable(r.getSunroofAvailable() != null ? r.getSunroofAvailable() : false);
+            v.setImageUrl(r.getImageUrl());
+            v.setUser(u); // Link bi-directionally
+
+            u.getVehicles().add(v);
         } else {
             u.setRole(ERole.ROLE_PASSENGER);
         }

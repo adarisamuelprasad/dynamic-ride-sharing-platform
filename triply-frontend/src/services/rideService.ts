@@ -23,6 +23,11 @@ export interface Ride {
         capacity: number;
         driverVerified: boolean;
     };
+    vehicleModel?: string;
+    vehiclePlate?: string;
+    vehicleImage?: string;
+    acAvailable?: boolean;
+    sunroofAvailable?: boolean;
 }
 
 export interface RideRequest {
@@ -35,6 +40,7 @@ export interface RideRequest {
     sourceLng?: number;
     destLat?: number;
     destLng?: number;
+    vehicleId?: number;
 }
 
 export interface SearchParams {
@@ -54,6 +60,11 @@ export const rideService = {
         );
         const queryString = new URLSearchParams(cleanParams as any).toString();
         const response = await axios.get<Ride[]>(`${API_BASE}/search?${queryString}`);
+        return response.data;
+    },
+
+    async getMyRides(): Promise<Ride[]> {
+        const response = await axios.get<Ride[]>(`${API_BASE}/my-rides`);
         return response.data;
     },
 

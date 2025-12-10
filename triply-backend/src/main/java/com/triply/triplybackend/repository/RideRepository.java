@@ -18,4 +18,6 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT r.destination FROM Ride r")
     List<String> findDistinctDestinations();
+
+    List<Ride> findByDriverId(Long driverId);
 }

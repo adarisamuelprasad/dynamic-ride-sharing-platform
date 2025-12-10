@@ -44,8 +44,7 @@ public class RideController {
             @RequestParam(required = false) String date,
             @RequestParam(required = false) Double minFare,
             @RequestParam(required = false) Double maxFare,
-            @RequestParam(required = false) String vehicleModel
-    ) {
+            @RequestParam(required = false) String vehicleModel) {
         java.time.LocalDateTime dateParam = null;
         if (date != null && !date.isBlank()) {
             // Expect ISO date like 2025-12-02
@@ -58,5 +57,20 @@ public class RideController {
     @GetMapping
     public ResponseEntity<?> allRides() {
         return ResponseEntity.ok(rideService.findAll());
+    }
+
+    @GetMapping("/my-rides")
+    public ResponseEntity<?> getMyRides(HttpServletRequest httpReq) {
+        String authHeader = httpReq.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        Long driverId = jwtUtil.getClaims(token).get("uid", Long.class);
+
+        return ResponseEntity.ok(rideService.getRidesByDriver(driverId));
     }
 }

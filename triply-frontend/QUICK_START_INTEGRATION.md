@@ -1,4 +1,4 @@
-# 🚀 Triply Ride Share - Quick Start Guide
+# 🚀 TripLy Ride Share - Quick Start Guide
 
 ## ✅ Integration Status: COMPLETE
 

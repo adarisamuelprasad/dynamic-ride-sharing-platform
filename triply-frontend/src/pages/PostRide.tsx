@@ -1,11 +1,19 @@
 import { authService } from "@/services/authService";
 import { rideService } from "@/services/rideService";
+import { userService } from "@/services/userService";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MapPin, Calendar, Users, IndianRupee, Car, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,8 +24,10 @@ const PostRide = () => {
     departureTime: "",
     availableSeats: "3",
     farePerSeat: "",
+    vehicleId: "",
   });
   const [loading, setLoading] = useState(false);
+  const [vehicles, setVehicles] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,10 +48,44 @@ const PostRide = () => {
       navigate("/dashboard");
       return;
     }
+
+    // Load vehicles
+    loadVehicles();
   }, [navigate]);
+
+  const loadVehicles = async () => {
+    try {
+      const data = await userService.getVehicles();
+      const vehicleList = Array.isArray(data) ? data : [];
+      setVehicles(vehicleList);
+
+      // Safely pre-select first vehicle if available
+      if (vehicleList.length > 0) {
+        const firstVehicle = vehicleList[0];
+        if (firstVehicle && firstVehicle.id) {
+          setForm(prev => ({
+            ...prev,
+            vehicleId: firstVehicle.id.toString(),
+            availableSeats: firstVehicle.capacity?.toString() || "3"
+          }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load vehicles", err);
+      setVehicles([]);
+    }
+  };
 
   const update = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleVehicleChange = (val: string) => {
+    update("vehicleId", val);
+    const selected = vehicles.find(v => v.id.toString() === val);
+    if (selected && selected.capacity) {
+      update("availableSeats", selected.capacity.toString());
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +96,8 @@ const PostRide = () => {
       await rideService.postRide({
         ...form,
         availableSeats: parseInt(form.availableSeats),
-        farePerSeat: parseFloat(form.farePerSeat)
+        farePerSeat: parseFloat(form.farePerSeat),
+        vehicleId: form.vehicleId ? parseInt(form.vehicleId) : undefined
       });
       setLoading(false);
       toast.success("Ride posted successfully!");
@@ -63,6 +108,17 @@ const PostRide = () => {
       toast.error("Failed to post ride. Please try again.");
     }
   };
+
+  if (!authService.isLoggedIn()) {
+    return null; // or a loading spinner
+  }
+
+  const user = authService.currentUser;
+
+  if (user?.role !== "ROLE_DRIVER") {
+    // Navigate happens in useEffect, but return null here to avoid flashing/rendering unauthorized content
+    return <div className="p-8 text-center">Redirecting...</div>;
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -88,6 +144,34 @@ const PostRide = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+
+            {/* Vehicle Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="vehicle" className="text-foreground">Select Vehicle</Label>
+              {vehicles.length === 0 ? (
+                <div className="rounded-md bg-yellow-50 p-4 text-sm text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                  You haven't added any vehicles yet. {" "}
+                  <Link to="/profile" className="font-medium underline underline-offset-4 hover:text-yellow-800 dark:hover:text-yellow-300">
+                    Add a vehicle in your profile
+                  </Link>
+                  {" "} to post a ride.
+                </div>
+              ) : (
+                <Select value={form.vehicleId} onValueChange={handleVehicleChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a vehicle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.isArray(vehicles) && vehicles.filter(v => v && v.id).map((v) => (
+                      <SelectItem key={v.id} value={v.id.toString()}>
+                        {v.model} - {v.plateNumber} ({v.capacity} seats)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
             {/* Route */}
             <div className="space-y-4">
               <div className="space-y-2">

@@ -88,4 +88,14 @@ public class RideRequest {
     public void setDestLng(Double destLng) {
         this.destLng = destLng;
     }
+
+    private Long vehicleId;
+
+    public Long getVehicleId() {
+        return vehicleId;
+    }
+
+    public void setVehicleId(Long vehicleId) {
+        this.vehicleId = vehicleId;
+    }
 }

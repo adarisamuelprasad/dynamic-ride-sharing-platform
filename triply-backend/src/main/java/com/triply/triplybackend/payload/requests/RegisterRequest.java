@@ -79,4 +79,32 @@ public class RegisterRequest {
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
+
+    private Boolean acAvailable;
+    private Boolean sunroofAvailable;
+    private String imageUrl;
+
+    public Boolean getAcAvailable() {
+        return acAvailable;
+    }
+
+    public void setAcAvailable(Boolean acAvailable) {
+        this.acAvailable = acAvailable;
+    }
+
+    public Boolean getSunroofAvailable() {
+        return sunroofAvailable;
+    }
+
+    public void setSunroofAvailable(Boolean sunroofAvailable) {
+        this.sunroofAvailable = sunroofAvailable;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

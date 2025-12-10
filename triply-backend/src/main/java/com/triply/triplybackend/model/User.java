@@ -34,7 +34,7 @@ public class User {
     }
 
     public User(Long id, String email, String password, String name, String phone,
-                ERole role, String vehicleModel, String licensePlate, Integer capacity) {
+            ERole role, String vehicleModel, String licensePlate, Integer capacity) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -132,5 +132,16 @@ public class User {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Vehicle> vehicles = new java.util.ArrayList<>();
+
+    public java.util.List<Vehicle> getVehicles() {
+        return vehicles;
+    }
+
+    public void setVehicles(java.util.List<Vehicle> vehicles) {
+        this.vehicles = vehicles;
     }
 }

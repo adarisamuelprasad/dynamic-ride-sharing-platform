@@ -19,6 +19,9 @@ public class RideService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.triply.triplybackend.repository.VehicleRepository vehicleRepository;
+
     public Ride postRide(Long driverId, RideRequest request) {
 
         User driver = userRepository.findById(driverId)
@@ -34,10 +37,30 @@ public class RideService {
         ride.setDestLat(request.getDestLat());
         ride.setDestLng(request.getDestLng());
 
+        if (request.getVehicleId() != null) {
+            com.triply.triplybackend.model.Vehicle v = vehicleRepository.findById(request.getVehicleId()).orElse(null);
+            if (v != null) {
+                ride.setVehicleModel(v.getModel());
+                ride.setVehiclePlate(v.getPlateNumber());
+                ride.setVehicleImage(v.getImageUrl());
+                ride.setAcAvailable(v.getAcAvailable());
+                ride.setSunroofAvailable(v.getSunroofAvailable());
+            } else {
+                // Fallback
+                ride.setVehicleModel(driver.getVehicleModel());
+                ride.setVehiclePlate(driver.getLicensePlate());
+            }
+        } else {
+            // Fallback
+            ride.setVehicleModel(driver.getVehicleModel());
+            ride.setVehiclePlate(driver.getLicensePlate());
+        }
+
         double fare = request.getFarePerSeat();
         if (fare <= 0 && request.getSourceLat() != null && request.getSourceLng() != null
                 && request.getDestLat() != null && request.getDestLng() != null) {
-            double distanceKm = haversine(request.getSourceLat(), request.getSourceLng(), request.getDestLat(), request.getDestLng());
+            double distanceKm = haversine(request.getSourceLat(), request.getSourceLng(), request.getDestLat(),
+                    request.getDestLng());
             double basePerKm = 5.0; // simple base rate per km
             fare = Math.max(1.0, Math.round(distanceKm * basePerKm));
         }
@@ -48,12 +71,13 @@ public class RideService {
     }
 
     public List<Ride> searchRide(String source, String destination, java.time.LocalDateTime date,
-                                 Double minFare, Double maxFare, String vehicleModel) {
+            Double minFare, Double maxFare, String vehicleModel) {
         List<Ride> base;
         if (date != null) {
             var start = date.toLocalDate().atStartOfDay();
             var end = start.plusDays(1);
-            base = rideRepository.findBySourceIgnoreCaseAndDestinationIgnoreCaseAndDepartureTimeBetween(source, destination, start, end);
+            base = rideRepository.findBySourceIgnoreCaseAndDestinationIgnoreCaseAndDepartureTimeBetween(source,
+                    destination, start, end);
         } else {
             base = rideRepository.findBySourceIgnoreCaseAndDestinationIgnoreCase(source, destination);
         }
@@ -61,7 +85,8 @@ public class RideService {
         return base.stream()
                 .filter(r -> minFare == null || r.getFarePerSeat() >= minFare)
                 .filter(r -> maxFare == null || r.getFarePerSeat() <= maxFare)
-                .filter(r -> vehicleModel == null || r.getDriver() != null && r.getDriver().getVehicleModel() != null && r.getDriver().getVehicleModel().toLowerCase().contains(vehicleModel.toLowerCase()))
+                .filter(r -> vehicleModel == null || r.getVehicleModel() != null
+                        && r.getVehicleModel().toLowerCase().contains(vehicleModel.toLowerCase()))
                 .toList();
     }
 
@@ -75,8 +100,12 @@ public class RideService {
         double dLon = Math.toRadians(lon2 - lon1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    public List<Ride> getRidesByDriver(Long driverId) {
+        return rideRepository.findByDriverId(driverId);
     }
 }

@@ -1,4 +1,4 @@
-# 🔧 Functionality Fixes - Triply Ride Share
+# 🔧 Functionality Fixes - TripLy Ride Share
 
 ## ✅ Issues Fixed
 

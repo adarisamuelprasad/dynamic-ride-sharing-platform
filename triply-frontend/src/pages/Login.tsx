@@ -53,9 +53,9 @@ const Login = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link to="/" className="mb-8 flex items-center justify-center gap-3">
-          <img src="/triplylogo-black.png" alt="Triply Logo" className="h-12 w-12 object-contain block dark:hidden" />
-          <img src="/triplylogo-white.png" alt="Triply Logo" className="h-12 w-12 object-contain hidden dark:block" />
-          <span className="font-display text-2xl font-bold text-foreground">Triply</span>
+          <img src="/triplylogo-black.png" alt="TripLy Logo" className="h-12 w-12 object-contain block dark:hidden" />
+          <img src="/triplylogo-white.png" alt="TripLy Logo" className="h-12 w-12 object-contain hidden dark:block" />
+          <span className="font-display text-2xl font-bold text-foreground">TripLy</span>
         </Link>
 
         <Card glass className="animate-fade-in">

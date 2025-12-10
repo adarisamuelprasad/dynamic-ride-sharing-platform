@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, Sun, Moon, User as UserIcon } from "lucide-react";
+import { Car, Menu, X, Sun, Moon, User as UserIcon, Lock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,10 +102,10 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <img src="/triplylogo-black.png" alt="Triply Logo" className="h-10 w-10 object-contain block dark:hidden" />
-          <img src="/triplylogo-white.png" alt="Triply Logo" className="h-10 w-10 object-contain hidden dark:block" />
+          <img src="/triplylogo-black.png" alt="TripLy Logo" className="h-10 w-10 object-contain block dark:hidden" />
+          <img src="/triplylogo-white.png" alt="TripLy Logo" className="h-10 w-10 object-contain hidden dark:block" />
           <span className="font-display text-xl font-bold text-foreground">
-            Triply
+            TripLy
           </span>
         </Link>
 
@@ -127,16 +127,14 @@ const Navbar = () => {
               Find Rides
             </Button>
           </Link>
-          {(!user || user.role === 'ROLE_DRIVER' || user.role === 'DRIVER' || user.role === 'ROLE_ADMIN') && (
-            <Link to="/post-ride">
-              <Button
-                variant={isActive("/post-ride") ? "glass" : "ghost"}
-                size="sm"
-              >
-                Offer Ride
-              </Button>
-            </Link>
-          )}
+          <Link to="/post-ride">
+            <Button
+              variant={isActive("/post-ride") ? "glass" : "ghost"}
+              size="sm"
+            >
+              Offer Ride
+            </Button>
+          </Link>
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin">
               <Button
@@ -144,6 +142,16 @@ const Navbar = () => {
                 size="sm"
               >
                 Admin Dashboard
+              </Button>
+            </Link>
+          )}
+          {(user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
+            <Link to="/ride-history">
+              <Button
+                variant={isActive("/ride-history") ? "glass" : "ghost"}
+                size="sm"
+              >
+                Ride History
               </Button>
             </Link>
           )}
@@ -185,9 +193,15 @@ const Navbar = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <Link to="/profile">
+                  <DropdownMenuItem>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>My Profile</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem onClick={() => setIsPasswordModalOpen(true)}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Edit Profile (Password)</span>
+                  <Lock className="mr-2 h-4 w-4" />
+                  <span>Change Password</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
@@ -304,17 +318,24 @@ const Navbar = () => {
               Find Rides
             </Button>
           </Link>
-          {(!user || user.role === 'ROLE_DRIVER' || user.role === 'DRIVER' || user.role === 'ROLE_ADMIN') && (
-            <Link to="/post-ride" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">
-                Offer Ride
-              </Button>
-            </Link>
-          )}
+          <Link to="/post-ride" onClick={() => setMobileMenuOpen(false)}>
+            <Button variant="ghost" className="w-full justify-start">
+              Offer Ride
+            </Button>
+          </Link>
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">
                 Admin Dashboard
+              </Button>
+            </Link>
+          )}
+
+
+          {(user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
+            <Link to="/ride-history" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Ride History
               </Button>
             </Link>
           )}

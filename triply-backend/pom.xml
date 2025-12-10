@@ -16,7 +16,7 @@
 	<artifactId>triply-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>triply-backend</name>
-	<description>Triply Ride Sharing Backend</description>
+	<description>TripLy Ride Sharing Backend</description>
 
 	<properties>
 		<java.version>17</java.version>

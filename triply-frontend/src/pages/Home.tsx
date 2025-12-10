@@ -131,7 +131,7 @@ const Home = () => {
               </h1>
 
               <p className="text-lg text-muted-foreground">
-                Triply connects drivers with empty seats to passengers heading the same way.
+                TripLy connects drivers with empty seats to passengers heading the same way.
                 Post rides as a driver or search and book as a passenger.
               </p>
 
@@ -224,7 +224,7 @@ const Home = () => {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Why Choose <span className="gradient-text">Triply</span>
+              Why Choose <span className="gradient-text">TripLy</span>
             </h2>
             <p className="mt-4 text-muted-foreground">
               The smartest way to travel between cities
@@ -265,7 +265,7 @@ const Home = () => {
                 Ready to Start Your Journey?
               </h2>
               <p className="mx-auto mt-4 max-w-md text-muted-foreground">
-                Join thousands of travelers who save money and reduce their carbon footprint with Triply.
+                Join thousands of travelers who save money and reduce their carbon footprint with TripLy.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link to="/register">
@@ -288,7 +288,7 @@ const Home = () => {
       <footer className="border-t border-border px-4 py-8">
         <div className="mx-auto max-w-6xl text-center">
           <p className="text-sm text-muted-foreground">
-            © 2025 Triply. Smart ride-sharing for everyone.
+            © 2025 TripLy. Smart ride-sharing for everyone.
           </p>
         </div>
       </footer>

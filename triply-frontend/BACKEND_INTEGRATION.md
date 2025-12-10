@@ -1,4 +1,4 @@
-# Triply Ride Share - Backend Integration Guide
+# TripLy Ride Share - Backend Integration Guide
 
 ## ✅ Integration Complete!
 

@@ -16,6 +16,9 @@ interface RegisterRequest {
     vehicleModel?: string;
     licensePlate?: string;
     capacity?: number;
+    acAvailable?: boolean;
+    sunroofAvailable?: boolean;
+    imageUrl?: string;
 }
 
 interface AuthResponse {
@@ -25,6 +28,7 @@ interface AuthResponse {
     email: string;
     role: string;
     name: string;
+    phone: string;
 }
 
 export const authService = {

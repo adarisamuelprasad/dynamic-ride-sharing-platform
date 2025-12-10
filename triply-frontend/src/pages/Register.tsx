@@ -8,6 +8,9 @@ import { Car, Mail, Lock, User, Phone, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { authService } from "@/services/authService";
+import { userService } from "@/services/userService";
+
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -19,11 +22,14 @@ const Register = () => {
     vehicleModel: "",
     licensePlate: "",
     capacity: "4",
+    acAvailable: false,
+    sunroofAvailable: false,
+    imageUrl: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const update = (key: string, value: string) => {
+  const update = (key: string, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -54,9 +60,9 @@ const Register = () => {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <Link to="/" className="mb-8 flex items-center justify-center gap-3">
-          <img src="/triplylogo-black.png" alt="Triply Logo" className="h-12 w-12 object-contain block dark:hidden" />
-          <img src="/triplylogo-white.png" alt="Triply Logo" className="h-12 w-12 object-contain hidden dark:block" />
-          <span className="font-display text-2xl font-bold text-foreground">Triply</span>
+          <img src="/triplylogo-black.png" alt="TripLy Logo" className="h-12 w-12 object-contain block dark:hidden" />
+          <img src="/triplylogo-white.png" alt="TripLy Logo" className="h-12 w-12 object-contain hidden dark:block" />
+          <span className="font-display text-2xl font-bold text-foreground">TripLy</span>
         </Link>
 
         <Card glass className="animate-fade-in">
@@ -69,7 +75,7 @@ const Register = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground">Full Name</Label>
+                <Label htmlFor="name" className="text-foreground">Full Name *</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -85,7 +91,7 @@ const Register = () => {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-foreground">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -100,7 +106,7 @@ const Register = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-foreground">Phone</Label>
+                  <Label htmlFor="phone" className="text-foreground">Phone *</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -117,7 +123,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">Password</Label>
+                <Label htmlFor="password" className="text-foreground">Password *</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -165,7 +171,7 @@ const Register = () => {
                   <p className="text-sm font-medium text-muted-foreground">Vehicle Details</p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="vehicleModel" className="text-foreground">Vehicle Model</Label>
+                      <Label htmlFor="vehicleModel" className="text-foreground">Vehicle Model *</Label>
                       <Input
                         id="vehicleModel"
                         placeholder="Honda City"
@@ -175,7 +181,7 @@ const Register = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="licensePlate" className="text-foreground">License Plate</Label>
+                      <Label htmlFor="licensePlate" className="text-foreground">License Plate *</Label>
                       <Input
                         id="licensePlate"
                         placeholder="MH 01 AB 1234"
@@ -186,7 +192,7 @@ const Register = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="capacity" className="text-foreground">Seating Capacity</Label>
+                    <Label htmlFor="capacity" className="text-foreground">Seating Capacity *</Label>
                     <Input
                       id="capacity"
                       type="number"
@@ -196,6 +202,49 @@ const Register = () => {
                       onChange={(e) => update("capacity", e.target.value)}
                       required={form.role === "DRIVER"}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="imageUpload" className="text-foreground">Vehicle Image (Optional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              const url = await userService.uploadImage(file);
+                              update("imageUrl", url);
+                              toast.success("Image uploaded!");
+                            } catch (err) {
+                              toast.error("Failed to upload image");
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                    {form.imageUrl && <p className="text-xs text-green-500">Image uploaded successfully</p>}
+                  </div>
+
+                  <div className="flex gap-6 pt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="acAvailable"
+                        checked={form.acAvailable}
+                        onCheckedChange={(checked) => update("acAvailable", checked === true)}
+                      />
+                      <Label htmlFor="acAvailable" className="cursor-pointer">AC Available</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sunroofAvailable"
+                        checked={form.sunroofAvailable}
+                        onCheckedChange={(checked) => update("sunroofAvailable", checked === true)}
+                      />
+                      <Label htmlFor="sunroofAvailable" className="cursor-pointer">Sunroof</Label>
+                    </div>
                   </div>
                 </div>
               )}

@@ -244,7 +244,7 @@ const AdminDashboard = () => {
             )}
 
             <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                <TabsList>
+                <TabsList className="w-full justify-start">
                     <TabsTrigger value="users">User Management</TabsTrigger>
                     <TabsTrigger value="rides">Ride Management</TabsTrigger>
                     <TabsTrigger value="bookings">Booking Management</TabsTrigger>

@@ -120,4 +120,51 @@ public class Ride {
     public void setDriver(User driver) {
         this.driver = driver;
     }
+
+    private String vehicleModel;
+    private String vehiclePlate;
+    private String vehicleImage;
+
+    public String getVehicleModel() {
+        return vehicleModel;
+    }
+
+    public void setVehicleModel(String vehicleModel) {
+        this.vehicleModel = vehicleModel;
+    }
+
+    public String getVehiclePlate() {
+        return vehiclePlate;
+    }
+
+    public void setVehiclePlate(String vehiclePlate) {
+        this.vehiclePlate = vehiclePlate;
+    }
+
+    public String getVehicleImage() {
+        return vehicleImage;
+    }
+
+    public void setVehicleImage(String vehicleImage) {
+        this.vehicleImage = vehicleImage;
+    }
+
+    private Boolean acAvailable;
+    private Boolean sunroofAvailable;
+
+    public Boolean getAcAvailable() {
+        return acAvailable;
+    }
+
+    public void setAcAvailable(Boolean acAvailable) {
+        this.acAvailable = acAvailable;
+    }
+
+    public Boolean getSunroofAvailable() {
+        return sunroofAvailable;
+    }
+
+    public void setSunroofAvailable(Boolean sunroofAvailable) {
+        this.sunroofAvailable = sunroofAvailable;
+    }
 }
