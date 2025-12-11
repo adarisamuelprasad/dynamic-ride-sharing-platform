@@ -258,9 +258,9 @@ const PostRide = () => {
 
             {/* Suggested Fare */}
             {form.source && form.destination && (
-              <div className="rounded-lg border border-accent/30 bg-accent/10 p-4 animate-fade-in">
-                <p className="text-sm text-accent">
-                  💡 Suggested fare for {form.source} → {form.destination}: ₹400-500 per seat
+              <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 animate-fade-in text-yellow-700 dark:text-yellow-400">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <span>💡</span> Suggested fare for <span className="font-bold">{form.source}</span> → <span className="font-bold">{form.destination}</span>: ₹400-500 per seat
                 </p>
               </div>
             )}

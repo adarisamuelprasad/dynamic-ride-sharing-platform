@@ -12,6 +12,11 @@ public class Ride {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ElementCollection
+    @CollectionTable(name = "ride_images", joinColumns = @JoinColumn(name = "ride_id"))
+    @Column(name = "image_url")
+    private java.util.List<String> extraImages = new java.util.ArrayList<>();
+
     private String source;
     private String destination;
 
@@ -166,5 +171,13 @@ public class Ride {
 
     public void setSunroofAvailable(Boolean sunroofAvailable) {
         this.sunroofAvailable = sunroofAvailable;
+    }
+
+    public java.util.List<String> getExtraImages() {
+        return extraImages;
+    }
+
+    public void setExtraImages(java.util.List<String> extraImages) {
+        this.extraImages = extraImages;
     }
 }

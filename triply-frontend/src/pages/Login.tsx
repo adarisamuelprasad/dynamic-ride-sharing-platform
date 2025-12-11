@@ -7,13 +7,45 @@ import { Label } from "@/components/ui/label";
 import { Car, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { authService } from "@/services/authService";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const handleLoginSuccess = () => {
+    const user = authService.currentUser;
+    if (!user) return;
+
+    // Handle redirect after login
+    const redirectPath = searchParams.get('redirect');
+    const rideId = searchParams.get('rideId');
+
+    if (redirectPath === '/post-ride') {
+      navigate('/post-ride');
+    } else if (redirectPath === '/book' && rideId) {
+      // Redirect back to dashboard with booking intent
+      navigate(`/dashboard?bookRide=${rideId}`);
+    } else if (user.role === 'ROLE_ADMIN') {
+      // Admin goes to admin panel
+      navigate('/admin');
+    } else {
+      // Regular users go to dashboard
+      navigate('/dashboard');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,34 +54,47 @@ const Login = () => {
     try {
       const user = await authService.login(email, password);
       setLoading(false);
-      toast.success(`Welcome back, ${user.name}!`);
+      // Show success dialog instead of toast + immediate redirect
+      setShowSuccessDialog(true);
 
-      // Handle redirect after login
-      const redirectPath = searchParams.get('redirect');
-      const rideId = searchParams.get('rideId');
+      // Auto redirect after 2 seconds
+      setTimeout(() => {
+        setShowSuccessDialog(false);
+        handleLoginSuccess();
+      }, 2000);
 
-      if (redirectPath === '/post-ride') {
-        navigate('/post-ride');
-      } else if (redirectPath === '/book' && rideId) {
-        // Redirect back to dashboard with booking intent
-        navigate(`/dashboard?bookRide=${rideId}`);
-      } else if (user.role === 'ROLE_ADMIN') {
-        // Admin goes to admin panel
-        navigate('/admin');
-      } else {
-        // Regular users go to dashboard
-        navigate('/dashboard');
-      }
     } catch (error: any) {
       setLoading(false);
       console.error('Login error:', error);
-      const errorMessage = error.response?.data || 'Invalid credentials. Please try again.';
+      let errorMessage = 'Invalid credentials. Please try again.';
+
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (typeof error.response.data?.message === 'string') {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data?.error === 'string') {
+          errorMessage = error.response.data.error;
+        }
+      }
+
       toast.error(errorMessage);
     }
   };
 
   return (
     <div className="flex min-h-[calc(100vh-100px)] items-center justify-center px-4 py-12">
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Login Successful!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Welcome back to TripLy. You have successfully signed in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link to="/" className="mb-8 flex items-center justify-center gap-3">
@@ -133,9 +178,9 @@ const Login = () => {
           <CardContent className="p-4">
             <p className="mb-2 text-xs font-medium text-muted-foreground">Demo Accounts</p>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <p>Admin: admin@example.com / Admin123!</p>
-              <p>Passenger: vibha@example.com / Password123!</p>
-              <p>Driver: ranvitha@example.com / Password123!</p>
+              <p>Admin: admin@example.com / admin</p>
+              <p>Passenger: john@passenger.com / password</p>
+              <p>Driver: samuel@driver.com / password</p>
             </div>
           </CardContent>
         </Card>

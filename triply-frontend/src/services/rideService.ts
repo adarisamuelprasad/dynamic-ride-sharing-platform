@@ -28,6 +28,7 @@ export interface Ride {
     vehicleImage?: string;
     acAvailable?: boolean;
     sunroofAvailable?: boolean;
+    extraImages?: string[];
 }
 
 export interface RideRequest {
@@ -41,6 +42,13 @@ export interface RideRequest {
     destLat?: number;
     destLng?: number;
     vehicleId?: number;
+    extraImages?: string[];
+    // Allow updating other fields optionally
+    model?: string;
+    plateNumber?: string;
+    imageUrl?: string;
+    acAvailable?: boolean;
+    sunroofAvailable?: boolean;
 }
 
 export interface SearchParams {
@@ -75,6 +83,11 @@ export const rideService = {
 
     async postRide(rideData: RideRequest): Promise<Ride> {
         const response = await axios.post<Ride>(`${API_BASE}/post`, rideData);
+        return response.data;
+    },
+
+    async updateRide(id: number, rideData: Partial<RideRequest>): Promise<Ride> {
+        const response = await axios.put<Ride>(`${API_BASE}/${id}`, rideData);
         return response.data;
     }
 };

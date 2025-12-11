@@ -113,6 +113,9 @@ public class UserController {
         v.setAcAvailable(req.getAcAvailable() != null ? req.getAcAvailable() : false);
         v.setSunroofAvailable(req.getSunroofAvailable() != null ? req.getSunroofAvailable() : false);
         v.setImageUrl(req.getImageUrl());
+        if (req.getExtraImages() != null) {
+            v.setExtraImages(req.getExtraImages());
+        }
         v.setUser(user);
 
         vehicleRepo.save(v);

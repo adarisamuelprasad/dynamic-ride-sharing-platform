@@ -11,6 +11,15 @@ import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -29,6 +38,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
   const update = (key: string, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -44,15 +55,24 @@ const Register = () => {
         capacity: form.role === 'DRIVER' ? parseInt(form.capacity) : undefined
       });
       setLoading(false);
-      toast.success("Account created successfully!");
-      // Register automatically logs in, so we go to dashboard
-      navigate("/dashboard");
+
+      // Ensure user is logged out so they have to log in manually
+      authService.logout();
+
+      setShowSuccessDialog(true);
     } catch (error: any) {
       setLoading(false);
       console.error('Registration error:', error);
-      const errorMessage = error.response?.data || 'Failed to create account. Please try again.';
+      const errorMessage = typeof error.response?.data === 'string'
+        ? error.response.data
+        : (error.response?.data?.message || error.response?.data?.error || 'Failed to create account. Please try again.');
       toast.error(errorMessage);
     }
+  };
+
+  const handleDialogClose = () => {
+    setShowSuccessDialog(false);
+    navigate("/login");
   };
 
   return (
@@ -277,6 +297,20 @@ const Register = () => {
             </div>
           </CardContent>
         </Card>
+
+        <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Registration Successful!</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have registered successfully. Please log in to continue.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={handleDialogClose}>OK</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

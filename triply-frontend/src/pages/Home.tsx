@@ -88,7 +88,7 @@ const Home = () => {
         const sorted = available.sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
         setAllRides(sorted);
       } catch (error: any) {
-        toast.error(error.response?.data || "Booking failed");
+        toast.error(typeof error.response?.data === 'string' ? error.response.data : (error.response?.data?.message || "Booking failed"));
       }
     }
   };

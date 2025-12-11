@@ -67,24 +67,33 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 new JwtResponse(token, "Bearer", saved.getId(), saved.getEmail(), saved.getRole().name(),
-                        saved.getName()));
+                        saved.getName(), saved.getPhone()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest r) {
 
+        System.out.println("Login attempt: " + r.getEmail());
+
         Optional<User> u = repo.findByEmail(r.getEmail());
-        if (u.isEmpty())
+        if (u.isEmpty()) {
+            System.out.println("User not found: " + r.getEmail());
             return ResponseEntity.status(401).body("Invalid credentials");
+        }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(r.getPassword(), u.get().getPassword()))
+        if (!encoder.matches(r.getPassword(), u.get().getPassword())) {
+            System.out.println("Password mismatch for: " + r.getEmail());
             return ResponseEntity.status(401).body("Invalid credentials");
+        }
+
+        System.out.println("Login success: " + r.getEmail());
 
         User user = u.get();
         String token = jwt.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 
         return ResponseEntity.ok(
-                new JwtResponse(token, "Bearer", user.getId(), user.getEmail(), user.getRole().name(), user.getName()));
+                new JwtResponse(token, "Bearer", user.getId(), user.getEmail(), user.getRole().name(), user.getName(),
+                        user.getPhone()));
     }
 }

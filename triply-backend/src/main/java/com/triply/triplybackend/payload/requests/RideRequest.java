@@ -14,6 +14,14 @@ public class RideRequest {
     private Double destLat;
     private Double destLng;
 
+    // Vehicle details for update/post override
+    private String model;
+    private String plateNumber;
+    private String imageUrl;
+    private Boolean acAvailable;
+    private Boolean sunroofAvailable;
+    private java.util.List<String> extraImages;
+
     public RideRequest() {
     }
 
@@ -97,5 +105,53 @@ public class RideRequest {
 
     public void setVehicleId(Long vehicleId) {
         this.vehicleId = vehicleId;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public void setPlateNumber(String plateNumber) {
+        this.plateNumber = plateNumber;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Boolean getAcAvailable() {
+        return acAvailable;
+    }
+
+    public void setAcAvailable(Boolean acAvailable) {
+        this.acAvailable = acAvailable;
+    }
+
+    public Boolean getSunroofAvailable() {
+        return sunroofAvailable;
+    }
+
+    public void setSunroofAvailable(Boolean sunroofAvailable) {
+        this.sunroofAvailable = sunroofAvailable;
+    }
+
+    public java.util.List<String> getExtraImages() {
+        return extraImages;
+    }
+
+    public void setExtraImages(java.util.List<String> extraImages) {
+        this.extraImages = extraImages;
     }
 }

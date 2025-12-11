@@ -73,4 +73,25 @@ public class RideController {
 
         return ResponseEntity.ok(rideService.getRidesByDriver(driverId));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRide(@PathVariable Long id, @RequestBody RideRequest request,
+            HttpServletRequest httpReq) {
+        String authHeader = httpReq.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        Long driverId = jwtUtil.getClaims(token).get("uid", Long.class);
+
+        try {
+            Ride updated = rideService.updateRide(id, driverId, request);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
 }

@@ -20,6 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { authService } from "../services/authService";
 
@@ -29,6 +39,7 @@ const Navbar = () => {
   const [user, setUser] = useState(authService.currentUser);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [passData, setPassData] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,13 +103,19 @@ const Navbar = () => {
 
   const handleLogout = () => {
     authService.logout();
-    window.location.href = '/'; // Hard redirect to clear any state if needed, or use navigate('/')
+    setMobileMenuOpen(false);
+    setIsLogoutDialogOpen(false);
+    window.location.href = '/';
+  };
+
+  const confirmLogout = () => {
+    setIsLogoutDialogOpen(true);
   };
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-[hsla(0,0%,100%,0.8)] dark:bg-[hsla(222,47%,11%,0.7)] backdrop-blur-xl border border-[hsla(222,47%,11%,0.1)] dark:border-[hsla(0,0%,100%,0.06)] rounded-xl sticky top-4 z-50 mx-auto max-w-6xl px-6 py-4 transition-colors duration-300">
+    <nav className="bg-[hsla(0,0%,100%,0.8)] dark:bg-[hsla(222,47%,11%,0.7)] backdrop-blur-xl border border-[hsla(222,47%,11%,0.1)] dark:border-[hsla(0,0%,100%,0.06)] rounded-xl fixed top-4 left-0 right-0 z-50 mx-auto max-w-6xl px-6 py-4 transition-colors duration-300">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
@@ -113,7 +130,8 @@ const Navbar = () => {
         <div className="hidden items-center gap-2 md:flex">
           <Link to="/">
             <Button
-              variant={isActive("/") ? "glass" : "ghost"}
+              variant={isActive("/") ? "outline" : "ghost"}
+              className={isActive("/") ? "border-black dark:border-white" : ""}
               size="sm"
             >
               Home
@@ -121,7 +139,8 @@ const Navbar = () => {
           </Link>
           <Link to="/dashboard">
             <Button
-              variant={isActive("/dashboard") ? "glass" : "ghost"}
+              variant={isActive("/dashboard") ? "outline" : "ghost"}
+              className={isActive("/dashboard") ? "border-black dark:border-white" : ""}
               size="sm"
             >
               Find Rides
@@ -129,7 +148,8 @@ const Navbar = () => {
           </Link>
           <Link to="/post-ride">
             <Button
-              variant={isActive("/post-ride") ? "glass" : "ghost"}
+              variant={isActive("/post-ride") ? "outline" : "ghost"}
+              className={isActive("/post-ride") ? "border-black dark:border-white" : ""}
               size="sm"
             >
               Offer Ride
@@ -138,7 +158,8 @@ const Navbar = () => {
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin">
               <Button
-                variant={isActive("/admin") ? "glass" : "ghost"}
+                variant={isActive("/admin") ? "outline" : "ghost"}
+                className={isActive("/admin") ? "border-black dark:border-white" : ""}
                 size="sm"
               >
                 Admin Dashboard
@@ -148,7 +169,8 @@ const Navbar = () => {
           {(user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
             <Link to="/ride-history">
               <Button
-                variant={isActive("/ride-history") ? "glass" : "ghost"}
+                variant={isActive("/ride-history") ? "outline" : "ghost"}
+                className={isActive("/ride-history") ? "border-black dark:border-white" : ""}
                 size="sm"
               >
                 Ride History
@@ -178,17 +200,17 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10 border border-border">
-                    <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${user.name}`} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={`https://api.dicebear.com/9.x/initials/svg?seed=${user.name || 'User'}`} alt={user.name || 'User'} />
+                    <AvatarFallback>{(user.name || 'U').charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
+                      {user.email || 'No Email'}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -204,7 +226,7 @@ const Navbar = () => {
                   <span>Change Password</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={confirmLogout}>
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -280,6 +302,21 @@ const Navbar = () => {
           </DialogContent>
         </Dialog>
 
+        <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will be logged out of your account.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-2 md:hidden">
           <Button
@@ -342,8 +379,8 @@ const Navbar = () => {
 
           <div className="mt-2 flex gap-2 flex-col">
             {user ? (
-              <Button variant="outline" className="w-full" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
-                Logout ({user.name})
+              <Button variant="outline" className="w-full" onClick={confirmLogout}>
+                Logout ({user.name || 'User'})
               </Button>
             ) : (
               <div className="flex gap-2">

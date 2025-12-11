@@ -20,12 +20,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster position="top-right" />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <div className="min-h-screen">
-          <div className="p-4">
-            <Navbar />
-          </div>
-          <main>
+          <Navbar />
+          <main className="pt-24">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />

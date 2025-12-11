@@ -45,6 +45,9 @@ public class RideService {
                 ride.setVehicleImage(v.getImageUrl());
                 ride.setAcAvailable(v.getAcAvailable());
                 ride.setSunroofAvailable(v.getSunroofAvailable());
+                if (v.getExtraImages() != null) {
+                    ride.setExtraImages(new java.util.ArrayList<>(v.getExtraImages()));
+                }
             } else {
                 // Fallback
                 ride.setVehicleModel(driver.getVehicleModel());
@@ -107,5 +110,41 @@ public class RideService {
 
     public List<Ride> getRidesByDriver(Long driverId) {
         return rideRepository.findByDriverId(driverId);
+    }
+
+    public Ride updateRide(Long rideId, Long driverId, RideRequest req) {
+        Ride ride = rideRepository.findById(rideId).orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (!ride.getDriver().getId().equals(driverId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        // Update basic fields if provided
+        if (req.getSource() != null)
+            ride.setSource(req.getSource());
+        if (req.getDestination() != null)
+            ride.setDestination(req.getDestination());
+        if (req.getAvailableSeats() != 0)
+            ride.setAvailableSeats(req.getAvailableSeats());
+        if (req.getFarePerSeat() != 0)
+            ride.setFarePerSeat(req.getFarePerSeat());
+
+        // Update vehicle details if provided (this is the key requirement)
+        if (req.getModel() != null)
+            ride.setVehicleModel(req.getModel());
+        if (req.getPlateNumber() != null)
+            ride.setVehiclePlate(req.getPlateNumber());
+        if (req.getImageUrl() != null)
+            ride.setVehicleImage(req.getImageUrl());
+        if (req.getExtraImages() != null)
+            ride.setExtraImages(req.getExtraImages());
+
+        // Also update boolean flags if they are part of "details"
+        if (req.getAcAvailable() != null)
+            ride.setAcAvailable(req.getAcAvailable());
+        if (req.getSunroofAvailable() != null)
+            ride.setSunroofAvailable(req.getSunroofAvailable());
+
+        return rideRepository.save(ride);
     }
 }
