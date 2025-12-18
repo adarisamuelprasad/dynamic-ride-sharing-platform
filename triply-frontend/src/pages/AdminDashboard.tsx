@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -248,6 +249,7 @@ const AdminDashboard = () => {
                     <TabsTrigger value="users">User Management</TabsTrigger>
                     <TabsTrigger value="rides">Ride Management</TabsTrigger>
                     <TabsTrigger value="bookings">Booking Management</TabsTrigger>
+                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="users" className="space-y-4">
@@ -379,6 +381,10 @@ const AdminDashboard = () => {
                             </Table>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="analytics" className="space-y-4">
+                    <AnalyticsTab users={users} rides={rides} bookings={bookings} />
                 </TabsContent>
             </Tabs>
         </div>
