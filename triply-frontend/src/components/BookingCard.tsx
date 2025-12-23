@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MapPin, Users, CheckCircle, Clock, XCircle } from "lucide-react";
 
 interface BookingCardProps {
@@ -10,13 +11,15 @@ interface BookingCardProps {
       source: string;
       destination: string;
     };
+    fareAmount?: number;
     passenger?: {
       name: string;
     };
   };
+  onCancel?: (id: number) => void;
 }
 
-const BookingCard = ({ booking }: BookingCardProps) => {
+const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
   const statusConfig = {
     CONFIRMED: {
       icon: CheckCircle,
@@ -36,9 +39,20 @@ const BookingCard = ({ booking }: BookingCardProps) => {
       bg: "bg-destructive/10",
       label: "Cancelled",
     },
+    COMPLETED: {
+      icon: CheckCircle,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      label: "Completed",
+    },
   };
 
-  const status = statusConfig[booking.status];
+  const status = statusConfig[booking.status] || {
+    icon: Clock,
+    color: "text-muted-foreground",
+    bg: "bg-muted",
+    label: booking.status,
+  };
   const StatusIcon = status.icon;
 
   return (
@@ -75,12 +89,33 @@ const BookingCard = ({ booking }: BookingCardProps) => {
             <Users className="h-4 w-4" />
             <span>{booking.seatsBooked} seat(s)</span>
           </div>
+          {booking.fareAmount && (
+            <div className="flex items-center gap-1.5 border-l pl-4 font-bold text-foreground">
+              ₹{booking.fareAmount.toFixed(2)}
+            </div>
+          )}
           {booking.passenger && (
             <span>• {booking.passenger.name}</span>
           )}
         </div>
+
+
+        {/* Actions */}
+        {booking.status !== "CANCELLED" && onCancel && (
+          <div className="mt-4 border-t pt-4">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full"
+              onClick={() => onCancel(booking.id)}
+            >
+              Cancel Booking
+            </Button>
+          </div>
+        )
+        }
       </CardContent>
-    </Card>
+    </Card >
   );
 };
 

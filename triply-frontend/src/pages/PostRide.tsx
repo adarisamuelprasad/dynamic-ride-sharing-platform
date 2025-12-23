@@ -88,6 +88,42 @@ const PostRide = () => {
     }
   };
 
+  const [estimate, setEstimate] = useState<{
+    distanceKm: number;
+    suggestedFare: number;
+    sourceLat: number;
+    sourceLng: number;
+    destLat: number;
+    destLng: number;
+  } | null>(null);
+  const [estimating, setEstimating] = useState(false);
+
+  useEffect(() => {
+    const fetchEstimate = async () => {
+      if (form.source && form.destination && form.source.length > 2 && form.destination.length > 2) {
+        setEstimating(true);
+        try {
+          const data = await rideService.estimateFare(form.source, form.destination);
+          setEstimate(data);
+          // Only auto-fill if the user hasn't typed anything in fare yet or if it's "0"
+          if (!form.farePerSeat || form.farePerSeat === "0") {
+            update("farePerSeat", data.suggestedFare.toString());
+          }
+        } catch (err) {
+          console.error("Estimation failed", err);
+          setEstimate(null);
+        } finally {
+          setEstimating(false);
+        }
+      } else {
+        setEstimate(null);
+      }
+    };
+
+    const timer = setTimeout(fetchEstimate, 1000);
+    return () => clearTimeout(timer);
+  }, [form.source, form.destination]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -97,7 +133,12 @@ const PostRide = () => {
         ...form,
         availableSeats: parseInt(form.availableSeats),
         farePerSeat: parseFloat(form.farePerSeat),
-        vehicleId: form.vehicleId ? parseInt(form.vehicleId) : undefined
+        vehicleId: form.vehicleId ? parseInt(form.vehicleId) : undefined,
+        // Carry over coordinates from estimate if available
+        sourceLat: estimate?.sourceLat,
+        sourceLng: estimate?.sourceLng,
+        destLat: estimate?.destLat,
+        destLng: estimate?.destLng
       });
       setLoading(false);
       toast.success("Ride posted successfully!");
@@ -252,15 +293,30 @@ const PostRide = () => {
                     onChange={(e) => update("farePerSeat", e.target.value)}
                     required
                   />
+                  {estimating && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Suggested Fare */}
             {form.source && form.destination && (
-              <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 animate-fade-in text-yellow-700 dark:text-yellow-400">
+              <div className={`rounded-lg border p-4 animate-fade-in ${estimate ? 'border-primary/30 bg-primary/5 text-primary' : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'}`}>
                 <p className="text-sm font-medium flex items-center gap-2">
-                  <span>💡</span> Suggested fare for <span className="font-bold">{form.source}</span> → <span className="font-bold">{form.destination}</span>: ₹400-500 per seat
+                  <span>💡</span>
+                  {estimating ? (
+                    "Calculating suggested fare..."
+                  ) : estimate ? (
+                    <>
+                      Estimated distance for <span className="font-bold">{form.source}</span> → <span className="font-bold">{form.destination}</span> is <span className="font-bold">{estimate.distanceKm.toFixed(1)} km</span>.
+                      Suggested fare: <span className="font-bold">₹{estimate.suggestedFare}</span> per seat.
+                    </>
+                  ) : (
+                    <>Suggested fare for <span className="font-bold">{form.source}</span> → <span className="font-bold">{form.destination}</span>: ₹400-500 per seat</>
+                  )}
                 </p>
               </div>
             )}

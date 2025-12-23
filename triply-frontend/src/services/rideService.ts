@@ -29,6 +29,7 @@ export interface Ride {
     acAvailable?: boolean;
     sunroofAvailable?: boolean;
     extraImages?: string[];
+    status?: string;
 }
 
 export interface RideRequest {
@@ -88,6 +89,26 @@ export const rideService = {
 
     async updateRide(id: number, rideData: Partial<RideRequest>): Promise<Ride> {
         const response = await axios.put<Ride>(`${API_BASE}/${id}`, rideData);
+        return response.data;
+    },
+
+    async cancelRide(id: number): Promise<void> {
+        await axios.delete(`${API_BASE}/${id}`);
+    },
+
+    async completeRide(id: number): Promise<void> {
+        await axios.post(`${API_BASE}/complete/${id}`);
+    },
+
+    async estimateFare(source: string, destination: string): Promise<{
+        distanceKm: number;
+        suggestedFare: number;
+        sourceLat: number;
+        sourceLng: number;
+        destLat: number;
+        destLng: number;
+    }> {
+        const response = await axios.get(`${API_BASE}/estimate-fare?source=${source}&destination=${destination}`);
         return response.data;
     }
 };

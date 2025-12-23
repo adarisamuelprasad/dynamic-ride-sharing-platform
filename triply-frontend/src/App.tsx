@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,16 +11,25 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import PostRide from "./pages/PostRide";
 import AdminDashboard from "./pages/AdminDashboard";
+import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
 import RideHistory from "./pages/RideHistory";
 import "./services/axiosConfig"; // Import axios configuration
+import { useWebSockets } from "./hooks/useWebSockets";
 
 const queryClient = new QueryClient();
+
+const NotificationWrapper = ({ children }: { children: React.ReactNode }) => {
+  useWebSockets();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster position="top-right" />
+      {/* Temporarily disabled WebSocket notifications for debugging */}
+      {/* <NotificationWrapper> */}
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <div className="min-h-screen">
           <Navbar />
@@ -33,11 +43,13 @@ const App = () => (
               <Route path="/post-ride" element={<PostRide />} />
               <Route path="/ride-history" element={<RideHistory />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/payments" element={<Payments />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </div>
       </BrowserRouter>
+      {/* </NotificationWrapper> */}
     </TooltipProvider>
   </QueryClientProvider>
 );

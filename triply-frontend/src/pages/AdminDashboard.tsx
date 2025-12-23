@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import Payments from "./Payments";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -249,6 +250,7 @@ const AdminDashboard = () => {
                     <TabsTrigger value="users">User Management</TabsTrigger>
                     <TabsTrigger value="rides">Ride Management</TabsTrigger>
                     <TabsTrigger value="bookings">Booking Management</TabsTrigger>
+                    <TabsTrigger value="payments">Financials</TabsTrigger>
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 </TabsList>
 
@@ -379,6 +381,17 @@ const AdminDashboard = () => {
                                     ))}
                                 </TableBody>
                             </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="payments" className="space-y-4">
+                    <Card glass>
+                        <CardHeader>
+                            <CardTitle>Global Transactions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Payments />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -177,6 +177,17 @@ const Navbar = () => {
               </Button>
             </Link>
           )}
+          {user && (
+            <Link to="/payments">
+              <Button
+                variant={isActive("/payments") ? "outline" : "ghost"}
+                className={isActive("/payments") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                Payments
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Auth Buttons & Theme Toggle */}
@@ -373,6 +384,13 @@ const Navbar = () => {
             <Link to="/ride-history" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">
                 Ride History
+              </Button>
+            </Link>
+          )}
+          {user && (
+            <Link to="/payments" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Payments
               </Button>
             </Link>
           )}
