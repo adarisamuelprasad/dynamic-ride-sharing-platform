@@ -18,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
+@SuppressWarnings("null")
 public class AdminController {
 
     @Autowired
@@ -38,13 +39,20 @@ public class AdminController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody AdminUpdateUserRequest body) {
         return users.findById(id)
                 .map(u -> {
-                    if (body.getName() != null) u.setName(body.getName());
-                    if (body.getPhone() != null) u.setPhone(body.getPhone());
-                    if (body.getBlocked() != null) u.setBlocked(body.getBlocked());
-                    if (body.getDriverVerified() != null) u.setDriverVerified(body.getDriverVerified());
-                    if (body.getVehicleModel() != null) u.setVehicleModel(body.getVehicleModel());
-                    if (body.getLicensePlate() != null) u.setLicensePlate(body.getLicensePlate());
-                    if (body.getCapacity() != null) u.setCapacity(body.getCapacity());
+                    if (body.getName() != null)
+                        u.setName(body.getName());
+                    if (body.getPhone() != null)
+                        u.setPhone(body.getPhone());
+                    if (body.getBlocked() != null)
+                        u.setBlocked(body.getBlocked());
+                    if (body.getDriverVerified() != null)
+                        u.setDriverVerified(body.getDriverVerified());
+                    if (body.getVehicleModel() != null)
+                        u.setVehicleModel(body.getVehicleModel());
+                    if (body.getLicensePlate() != null)
+                        u.setLicensePlate(body.getLicensePlate());
+                    if (body.getCapacity() != null)
+                        u.setCapacity(body.getCapacity());
                     if (body.getRole() != null) {
                         try {
                             u.setRole(ERole.valueOf(body.getRole()));
@@ -104,4 +112,3 @@ public class AdminController {
         return Collections.emptyList();
     }
 }
-

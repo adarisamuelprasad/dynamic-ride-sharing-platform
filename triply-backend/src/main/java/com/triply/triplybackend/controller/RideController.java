@@ -9,10 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/rides")
+@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:8080" }, allowCredentials = "true")
+@SuppressWarnings("null")
 public class RideController {
 
     @Autowired
@@ -92,6 +97,82 @@ public class RideController {
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelRide(@PathVariable Long id, HttpServletRequest httpReq) {
+        String authHeader = httpReq.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        Long driverId = jwtUtil.getClaims(token).get("uid", Long.class);
+
+        try {
+            rideService.cancelRide(id, driverId);
+            return ResponseEntity.ok("Ride cancelled successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/complete/{id}")
+    public ResponseEntity<?> completeRide(@PathVariable Long id, HttpServletRequest httpReq) {
+        String authHeader = httpReq.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        Long driverId = jwtUtil.getClaims(token).get("uid", Long.class);
+
+        try {
+            rideService.completeRide(id, driverId);
+            return ResponseEntity.ok("Ride marked as completed and funds transferred to wallet");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/estimate-fare")
+    public ResponseEntity<?> estimateFare(@RequestParam String source, @RequestParam String destination) {
+        if (source == null || source.isBlank() || destination == null || destination.isBlank()) {
+            return ResponseEntity.badRequest().body("Source and destination are required");
+        }
+
+        try {
+            double[] srcCoords = rideService.getGoogleMapsService().getCoordinates(source);
+            double[] destCoords = rideService.getGoogleMapsService().getCoordinates(destination);
+
+            if (srcCoords == null || destCoords == null) {
+                return ResponseEntity.badRequest().body("Could not find coordinates for locations");
+            }
+
+            double distanceKm = rideService.getGoogleMapsService().calculateDistance(
+                    srcCoords[0], srcCoords[1], destCoords[0], destCoords[1]);
+
+            double baseFare = rideService.getBaseFare();
+            double ratePerKm = rideService.getRatePerKm();
+            double calculatedFare = baseFare + (ratePerKm * distanceKm);
+            calculatedFare = Math.max(1.0, Math.round(calculatedFare * 100.0) / 100.0);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("distanceKm", distanceKm);
+            result.put("suggestedFare", calculatedFare);
+            result.put("sourceLat", srcCoords[0]);
+            result.put("sourceLng", srcCoords[1]);
+            result.put("destLat", destCoords[0]);
+            result.put("destLng", destCoords[1]);
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error calculating estimate: " + e.getMessage());
         }
     }
 }

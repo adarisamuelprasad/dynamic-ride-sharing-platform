@@ -26,6 +26,71 @@ public class Booking {
     @Transient
     private Long rideId;
 
+    // Passenger specific locations
+    private Double pickupLat;
+    private Double pickupLng;
+    private Double dropoffLat;
+    private Double dropoffLng;
+    private Double distanceKm;
+    private Double fareAmount;
+    private String paymentMethod; // CASH, STRIPE, NETBANKING
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getPickupLat() {
+        return pickupLat;
+    }
+
+    public void setPickupLat(Double pickupLat) {
+        this.pickupLat = pickupLat;
+    }
+
+    public Double getPickupLng() {
+        return pickupLng;
+    }
+
+    public void setPickupLng(Double pickupLng) {
+        this.pickupLng = pickupLng;
+    }
+
+    public Double getDropoffLat() {
+        return dropoffLat;
+    }
+
+    public void setDropoffLat(Double dropoffLat) {
+        this.dropoffLat = dropoffLat;
+    }
+
+    public Double getDropoffLng() {
+        return dropoffLng;
+    }
+
+    public void setDropoffLng(Double dropoffLng) {
+        this.dropoffLng = dropoffLng;
+    }
+
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
+    }
+
+    public Double getFareAmount() {
+        return fareAmount;
+    }
+
+    public void setFareAmount(Double fareAmount) {
+        this.fareAmount = fareAmount;
+    }
+
     // Getters and Setters
 
     public Long getId() {

@@ -29,6 +29,15 @@ public class User {
 
     private Boolean blocked = false;
     private Boolean driverVerified = false;
+    private Double walletBalance = 0.0;
+
+    public Double getWalletBalance() {
+        return walletBalance;
+    }
+
+    public void setWalletBalance(Double walletBalance) {
+        this.walletBalance = walletBalance;
+    }
 
     public User() {
     }

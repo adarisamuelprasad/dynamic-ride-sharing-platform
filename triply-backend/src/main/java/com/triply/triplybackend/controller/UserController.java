@@ -14,6 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/user")
 @CrossOrigin(origins = "http://localhost:8080", allowCredentials = "true")
+@SuppressWarnings("null")
 public class UserController {
 
     @Autowired

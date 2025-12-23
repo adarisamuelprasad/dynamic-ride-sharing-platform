@@ -16,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/upload")
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@SuppressWarnings("null")
 public class FileUploadController {
 
     // Simple local storage for demonstration
@@ -34,7 +35,8 @@ public class FileUploadController {
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             // Clean path
-            String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String originalFileName = StringUtils
+                    .cleanPath(java.util.Objects.requireNonNullElse(file.getOriginalFilename(), "unknown_file"));
 
             // Generate unique name to prevent collisions
             String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
