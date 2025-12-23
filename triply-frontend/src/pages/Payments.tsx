@@ -164,7 +164,6 @@ const Payments = () => {
                                 <TableHead>Route</TableHead>
                                 <TableHead>Amount</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Receipt</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -190,25 +189,11 @@ const Payments = () => {
                                             {payment.status}
                                         </span>
                                     </TableCell>
-                                <TableCell>
-                                    {payment.booking?.id ? (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => paymentService.downloadReceipt(payment.booking.id)}
-                                            className="text-xs"
-                                        >
-                                            Download
-                                        </Button>
-                                    ) : (
-                                        <span className="text-xs text-muted-foreground">N/A</span>
-                                    )}
-                                </TableCell>
                                 </TableRow>
                             ))}
                             {!(report?.transactions || report?.earningsHistory || report?.bookings)?.length && (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                         No transactions found.
                                     </TableCell>
                                 </TableRow>

@@ -260,42 +260,4 @@ public class PaymentController {
                 .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/pdf")
                 .body(pdf);
     }
-
-    @GetMapping("/receipt/{bookingId}")
-    public ResponseEntity<byte[]> downloadReceipt(@PathVariable Long bookingId, HttpServletRequest httpReq) {
-        String authHeader = httpReq.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body(null);
-        }
-        String token = authHeader.substring(7);
-        if (!jwtUtil.validate(token)) {
-            return ResponseEntity.status(401).body(null);
-        }
-        Long requesterId = jwtUtil.getClaims(token).get("uid", Long.class);
-        String role = jwtUtil.getClaims(token).get("role", String.class);
-
-        var bookingOpt = bookingRepository.findById(bookingId);
-        if (bookingOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(null);
-        }
-        var booking = bookingOpt.get();
-
-        boolean allowed = "ROLE_ADMIN".equals(role)
-                || (booking.getPassenger() != null && booking.getPassenger().getId().equals(requesterId))
-                || (booking.getRide() != null && booking.getRide().getDriver() != null
-                        && booking.getRide().getDriver().getId().equals(requesterId));
-        if (!allowed) {
-            return ResponseEntity.status(403).body(null);
-        }
-
-        var paymentOpt = paymentRepository.findByBooking_Id(bookingId);
-        Payment payment = paymentOpt.orElse(null);
-
-        byte[] pdf = reportService.generatePaymentReceiptPDF(booking, payment);
-        return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=payment_receipt_" + bookingId + ".pdf")
-                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/pdf")
-                .body(pdf);
-    }
 }
