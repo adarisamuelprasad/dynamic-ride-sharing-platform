@@ -9,6 +9,7 @@ import { Search, MapPin, Calendar, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { rideService, Ride } from "@/services/rideService";
 import { bookingService, Booking } from "@/services/bookingService";
+import { paymentService } from "@/services/paymentService";
 import { authService } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import PaymentMethodSelector from "@/components/PaymentMethodSelector";
@@ -24,8 +25,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-// Replace with your real publishable key or use placeholder for mock testing
-const stripePromise = loadStripe("pk_test_your_key_here");
+// Use env-driven publishable key; falls back to mock placeholder
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
 
 const Dashboard = () => {
   const [search, setSearch] = useState({ source: "", destination: "", date: "" });
@@ -185,13 +186,19 @@ const Dashboard = () => {
     }
   };
 
-  const handleStripeSuccess = (paymentIntentId: string) => {
-    toast.success("Payment confirmed!");
-    setIsPaymentModalOpen(false);
-    setClientSecret(null);
-    setSelectedRideForBooking(null);
-    fetchBookings();
-    fetchRides();
+  const handleStripeSuccess = async (paymentIntentId: string) => {
+    try {
+      await paymentService.confirmStripePayment(paymentIntentId);
+      toast.success("Payment confirmed and wallet updated");
+      setIsPaymentModalOpen(false);
+      setClientSecret(null);
+      setSelectedRideForBooking(null);
+      fetchBookings();
+      fetchRides();
+    } catch (error: any) {
+      toast.error(error?.response?.data || "Payment confirmed but wallet update failed");
+      console.error(error);
+    }
   };
 
   const handleCancelBooking = async (bookingId: number) => {

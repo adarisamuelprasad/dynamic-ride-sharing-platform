@@ -140,7 +140,10 @@ public class RideService {
         List<Ride> allRides = rideRepository.findAll();
 
         return allRides.stream()
-                .filter(r -> "AVAILABLE".equalsIgnoreCase(r.getStatus()) || r.getStatus() == null)
+                // Consider POSTED rides as visible/available
+                .filter(r -> r.getStatus() == null
+                        || "AVAILABLE".equalsIgnoreCase(r.getStatus())
+                        || "POSTED".equalsIgnoreCase(r.getStatus()))
                 .filter(r -> {
                     if (date == null)
                         return true;

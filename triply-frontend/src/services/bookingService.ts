@@ -48,6 +48,28 @@ export const bookingService = {
         return response.data;
     },
 
+    async downloadReport(): Promise<void> {
+        const response = await axios.get(`${API_BASE}/download`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'booking_report.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    async downloadReportPdf(): Promise<void> {
+        const response = await axios.get(`${API_BASE}/download/pdf`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'booking_report.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
     async cancelBooking(bookingId: number): Promise<Booking> {
         const response = await axios.post<Booking>(`${API_BASE}/cancel/${bookingId}`);
         return response.data;

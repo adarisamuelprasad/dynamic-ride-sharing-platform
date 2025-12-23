@@ -15,4 +15,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Find bookings by ride ID
     List<Booking> findByRide_Id(Long rideId);
+
+    // Find bookings for rides posted by a specific driver
+    List<Booking> findByRide_Driver_Id(Long driverId);
 }

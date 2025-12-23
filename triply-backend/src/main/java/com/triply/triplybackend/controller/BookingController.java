@@ -3,16 +3,19 @@ package com.triply.triplybackend.controller;
 import com.triply.triplybackend.model.Booking;
 import com.triply.triplybackend.model.Payment;
 import com.triply.triplybackend.model.Ride;
+import com.triply.triplybackend.model.ERole;
 import com.triply.triplybackend.repository.BookingRepository;
 import com.triply.triplybackend.repository.RideRepository;
 import com.triply.triplybackend.repository.UserRepository;
 import com.triply.triplybackend.repository.PaymentRepository;
+import com.triply.triplybackend.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -39,6 +42,9 @@ public class BookingController {
 
     @Autowired
     private com.triply.triplybackend.service.NotificationService notificationService;
+
+    @Autowired
+    private ReportService reportService;
 
     @org.springframework.beans.factory.annotation.Value("${fare.base:50.0}")
     private double baseFare;
@@ -202,6 +208,70 @@ public class BookingController {
         }
         Long passengerId = passengerOpt.get().getId();
         return ResponseEntity.ok(bookingRepository.findByPassengerId(passengerId));
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<String> downloadBookingReport(Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        String email = (String) auth.getPrincipal();
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        var user = userOpt.get();
+        List<Booking> bookings;
+
+        if (ERole.ROLE_ADMIN.equals(user.getRole())) {
+            bookings = bookingRepository.findAll();
+        } else if (ERole.ROLE_DRIVER.equals(user.getRole())) {
+            bookings = bookingRepository.findByRide_Driver_Id(user.getId());
+        } else {
+            bookings = bookingRepository.findByPassengerId(user.getId());
+        }
+
+        String csv = reportService.generateBookingCSV(bookings);
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=booking_report.csv")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv")
+                .body(csv);
+    }
+
+    @GetMapping("/download/pdf")
+    public ResponseEntity<byte[]> downloadBookingReportPdf(Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+
+        String email = (String) auth.getPrincipal();
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(null);
+        }
+
+        var user = userOpt.get();
+        List<Booking> bookings;
+
+        if (ERole.ROLE_ADMIN.equals(user.getRole())) {
+            bookings = bookingRepository.findAll();
+        } else if (ERole.ROLE_DRIVER.equals(user.getRole())) {
+            bookings = bookingRepository.findByRide_Driver_Id(user.getId());
+        } else {
+            bookings = bookingRepository.findByPassengerId(user.getId());
+        }
+
+        byte[] pdf = reportService.generateBookingPDF(bookings);
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=booking_report.pdf")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/pdf")
+                .body(pdf);
     }
 
     @PostMapping("/cancel/{bookingId}")

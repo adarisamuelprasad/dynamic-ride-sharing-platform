@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { paymentService, PaymentReport } from "@/services/paymentService";
+import { bookingService } from "@/services/bookingService";
 import { authService } from "@/services/authService";
 import { Wallet, TrendingUp, CreditCard, ReceiptText, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,14 +42,40 @@ const Payments = () => {
                         Payment <span className="gradient-text">Reports</span>
                     </h1>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => paymentService.downloadReport()}
-                    className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
-                >
-                    <ReceiptText className="h-4 w-4 text-primary" />
-                    Download CSV
-                </Button>
+                <div className="flex gap-3 flex-wrap">
+                    <Button
+                        variant="outline"
+                        onClick={() => bookingService.downloadReport()}
+                        className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+                    >
+                        <ReceiptText className="h-4 w-4 text-primary" />
+                        Booking CSV
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => paymentService.downloadReport()}
+                        className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+                    >
+                        <ReceiptText className="h-4 w-4 text-primary" />
+                        Payment CSV
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => bookingService.downloadReportPdf()}
+                        className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+                    >
+                        <ReceiptText className="h-4 w-4 text-primary" />
+                        Booking PDF
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => paymentService.downloadReportPdf()}
+                        className="gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+                    >
+                        <ReceiptText className="h-4 w-4 text-primary" />
+                        Payment PDF
+                    </Button>
+                </div>
             </div>
 
             {/* Overview Cards */}
@@ -137,6 +164,7 @@ const Payments = () => {
                                 <TableHead>Route</TableHead>
                                 <TableHead>Amount</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Receipt</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -162,11 +190,25 @@ const Payments = () => {
                                             {payment.status}
                                         </span>
                                     </TableCell>
+                                <TableCell>
+                                    {payment.booking?.id ? (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => paymentService.downloadReceipt(payment.booking.id)}
+                                            className="text-xs"
+                                        >
+                                            Download
+                                        </Button>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">N/A</span>
+                                    )}
+                                </TableCell>
                                 </TableRow>
                             ))}
                             {!(report?.transactions || report?.earningsHistory || report?.bookings)?.length && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                                         No transactions found.
                                     </TableCell>
                                 </TableRow>

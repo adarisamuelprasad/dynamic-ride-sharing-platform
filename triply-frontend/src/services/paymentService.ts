@@ -35,6 +35,10 @@ export const paymentService = {
         return response.data;
     },
 
+    async confirmStripePayment(paymentIntentId: string): Promise<void> {
+        await axios.post(`${API_BASE}/confirm`, { paymentIntentId });
+    },
+
     async getReport(): Promise<PaymentReport> {
         const response = await axios.get<PaymentReport>(`${API_BASE}/report`);
         return response.data;
@@ -48,6 +52,32 @@ export const paymentService = {
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'payment_report.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    async downloadReportPdf(): Promise<void> {
+        const response = await axios.get(`${API_BASE}/download/pdf`, {
+            responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'payment_report.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    async downloadReceipt(bookingId: number): Promise<void> {
+        const response = await axios.get(`${API_BASE}/receipt/${bookingId}`, {
+            responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `payment_receipt_${bookingId}.pdf`);
         document.body.appendChild(link);
         link.click();
         link.remove();
