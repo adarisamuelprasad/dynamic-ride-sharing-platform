@@ -72,8 +72,12 @@ public class BookingController {
         var ride = rideOpt.get();
 
         // Check if passenger already booked this ride
-        var existingBooking = bookingRepository.findByPassengerIdAndRide_Id(passengerId, ride.getId());
-        if (existingBooking.isPresent() && !"CANCELLED".equals(existingBooking.get().getStatus())) {
+        // Check if passenger already booked this ride
+        List<Booking> existingBookings = bookingRepository.findByPassengerIdAndRide_Id(passengerId, ride.getId());
+        boolean hasActiveBooking = existingBookings.stream()
+                .anyMatch(b -> !"CANCELLED".equals(b.getStatus()));
+
+        if (hasActiveBooking) {
             return ResponseEntity.badRequest().body("You have already booked this ride");
         }
 

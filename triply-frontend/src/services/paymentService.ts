@@ -32,3 +32,66 @@ export const getPassengerHistory = async () => {
         return [];
     }
 };
+
+export const getDriverHistory = async () => {
+    const user = authService.currentUser;
+    if (!user) return [];
+
+    try {
+        const response = await axios.get(`${API_URL}/history/driver/${user.id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching driver history", error);
+        return [];
+    }
+};
+
+export interface PaymentReport {
+    totalRevenue?: number;
+    totalTransactions?: number;
+    walletBalance?: number;
+    totalEarnings?: number;
+    totalSpent?: number;
+    transactions?: any[];
+    earningsHistory?: any[];
+    bookings?: any[];
+}
+
+export const paymentService = {
+    getReport: async (): Promise<PaymentReport> => {
+        const user = authService.currentUser;
+        if (!user) return {};
+
+        try {
+            const response = await axios.get(`${API_URL}/report`, {
+                params: {
+                    userId: user.id,
+                    role: user.role
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching report", error);
+            return {};
+        }
+    },
+
+    confirmStripePayment: async (paymentIntentId: string) => {
+        try {
+            const response = await axios.post(`${API_URL}/confirm-stripe`, { paymentIntentId });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    downloadReport: () => {
+        console.log("Downloading CSV...");
+        // Implement CSV download logic here if needed
+    },
+
+    downloadReportPdf: () => {
+        console.log("Downloading PDF...");
+        // Implement PDF download logic here if needed
+    }
+};

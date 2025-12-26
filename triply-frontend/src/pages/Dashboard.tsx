@@ -31,7 +31,6 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 
 const Dashboard = () => {
   const [search, setSearch] = useState({ source: "", destination: "", date: "" });
   const [rides, setRides] = useState<Ride[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [myRides, setMyRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(authService.isLoggedIn());
@@ -47,6 +46,7 @@ const Dashboard = () => {
     dropoffLat: 0,
     dropoffLng: 0
   });
+  const [selectedBookingDetails, setSelectedBookingDetails] = useState<Booking | null>(null);
   const navigate = useNavigate();
 
   const fetchRides = async (searchParams?: any) => {
@@ -58,14 +58,6 @@ const Dashboard = () => {
     }
   };
 
-  const fetchBookings = async () => {
-    try {
-      const data = await bookingService.getMyBookings();
-      setBookings(data);
-    } catch (error) {
-      console.error("Failed to fetch bookings", error);
-    }
-  };
 
   const fetchOfferedRides = async () => {
     try {
@@ -84,15 +76,9 @@ const Dashboard = () => {
     const unsubscribe = authService.subscribe((user) => {
       const loggedIn = !!user;
       setIsLoggedIn(loggedIn);
-      if (loggedIn) {
-        fetchBookings();
-      } else {
-        setBookings([]);
-      }
     });
 
     if (authService.isLoggedIn()) {
-      fetchBookings();
       if (authService.currentUser?.role === 'ROLE_DRIVER' || authService.currentUser?.role === 'DRIVER') {
         fetchOfferedRides();
       }
@@ -176,8 +162,8 @@ const Dashboard = () => {
         toast.success(`Booking confirmed for ${selectedRideForBooking.source} → ${selectedRideForBooking.destination}`);
         setIsPaymentModalOpen(false);
         setSelectedRideForBooking(null);
-        fetchBookings();
         fetchRides();
+        // Removed fetchBookings() call
       }
     } catch (error: any) {
       toast.error(error.response?.data || "Failed to book ride");
@@ -193,27 +179,15 @@ const Dashboard = () => {
       setIsPaymentModalOpen(false);
       setClientSecret(null);
       setSelectedRideForBooking(null);
-      fetchBookings();
       fetchRides();
+      // Removed fetchBookings() call
     } catch (error: any) {
       toast.error(error?.response?.data || "Payment confirmed but wallet update failed");
       console.error(error);
     }
   };
 
-  const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) return;
-
-    try {
-      await bookingService.cancelBooking(bookingId);
-      toast.success("Booking cancelled successfully");
-      fetchBookings(); // Refresh list to show updated status
-      fetchRides(); // Update seat availability
-    } catch (error) {
-      console.error("Failed to cancel booking", error);
-      toast.error("Failed to cancel booking");
-    }
-  };
+  // handleCancelBooking removed as it was only for the My Bookings section which is now moved
 
   const handleCompleteRide = async (rideId: number) => {
     try {
@@ -328,35 +302,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* My Bookings - Only visible if logged in */}
-      {isLoggedIn && (
-        <div className="animate-fade-in">
-          <h2 className="mb-4 font-display text-xl font-bold text-foreground">My Bookings</h2>
-          {bookings.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {bookings.map((booking, index) => (
-                <div
-                  key={booking.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <BookingCard
-                    booking={{
-                      ...booking,
-                      status: booking.status as "CONFIRMED" | "PENDING" | "CANCELLED"
-                    }}
-                    onCancel={handleCancelBooking}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Card glass className="p-8 text-center">
-              <p className="text-muted-foreground">No bookings yet. Find a ride above!</p>
-            </Card>
-          )}
-        </div>
-      )}
+
       {/* My Offered Rides - Only visible if driver */}
       {isLoggedIn && (authService.currentUser?.role === 'ROLE_DRIVER' || authService.currentUser?.role === 'DRIVER') && (
         <div className="mt-12 animate-fade-in">
@@ -484,6 +430,117 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Booking Details Modal */}
+      <Dialog open={!!selectedBookingDetails} onOpenChange={(open) => !open && setSelectedBookingDetails(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Booking Details</DialogTitle>
+            <DialogDescription>
+              Booking information for your ride to {selectedBookingDetails?.ride?.destination}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedBookingDetails && (
+            <div className="space-y-4">
+              {/* Status Badge */}
+              <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg">
+                <span className="text-sm font-medium">Status</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold 
+                      ${selectedBookingDetails.status === 'CONFIRMED' ? 'bg-green-100 text-green-700' :
+                    selectedBookingDetails.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {selectedBookingDetails.status}
+                </span>
+              </div>
+
+              {/* Ride Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground uppercase">From</Label>
+                  <p className="font-semibold">{selectedBookingDetails.ride.source}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground uppercase">To</Label>
+                  <p className="font-semibold">{selectedBookingDetails.ride.destination}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground uppercase">Date</Label>
+                  <p className="font-medium">
+                    {new Date(selectedBookingDetails.ride.departureTime).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground uppercase">Time</Label>
+                  <p className="font-medium">
+                    {new Date(selectedBookingDetails.ride.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="border-t my-2" />
+
+              {/* Driver Info */}
+              {selectedBookingDetails.ride.driver && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-foreground">Driver Details</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Name:</span> {selectedBookingDetails.ride.driver.name}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Phone:</span> {selectedBookingDetails.ride.driver.phone}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Vehicle:</span> {selectedBookingDetails.ride.driver.vehicleModel || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Plate:</span> {selectedBookingDetails.ride.driver.licensePlate || selectedBookingDetails.ride.vehiclePlate || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t my-2" />
+
+              {/* Payment Info */}
+              <div className="bg-primary/5 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Fare Amount</span>
+                  <span className="font-bold">₹{selectedBookingDetails.fareAmount?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Payment Method</span>
+                  <span className="font-medium">{selectedBookingDetails.paymentMethod}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            {selectedBookingDetails?.status === 'CONFIRMED' && (
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  navigate('/payment-success', {
+                    state: {
+                      amount: selectedBookingDetails.fareAmount,
+                      ride: selectedBookingDetails.ride,
+                      bookingId: selectedBookingDetails.id,
+                      bookingDetails: { seats: selectedBookingDetails.seatsBooked },
+                      transactionId: 'VIEW_RECEIPT'
+                    }
+                  });
+                }}
+              >
+                View Ticket / Receipt
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => setSelectedBookingDetails(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

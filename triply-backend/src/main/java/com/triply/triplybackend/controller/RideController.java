@@ -175,4 +175,12 @@ public class RideController {
             return ResponseEntity.internalServerError().body("Error calculating estimate: " + e.getMessage());
         }
     }
+
+    @GetMapping("/locations/autocomplete")
+    public ResponseEntity<?> autocompleteLocations(@RequestParam String query) {
+        if (query == null || query.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(rideService.getGoogleMapsService().autocomplete(query));
+    }
 }

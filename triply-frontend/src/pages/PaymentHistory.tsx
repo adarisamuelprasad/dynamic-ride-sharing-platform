@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { getPassengerHistory } from '../services/paymentService';
+import { getPassengerHistory, getDriverHistory } from '../services/paymentService';
+import { authService } from '../services/authService';
 
 const PaymentHistory = () => {
     const [transactions, setTransactions] = useState<any[]>([]);
@@ -8,8 +9,19 @@ const PaymentHistory = () => {
 
     useEffect(() => {
         const fetchHistory = async () => {
+            const user = authService.currentUser;
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
             try {
-                const data = await getPassengerHistory();
+                let data = [];
+                if (user.role === 'DRIVER') {
+                    data = await getDriverHistory();
+                } else {
+                    data = await getPassengerHistory();
+                }
                 setTransactions(data);
             } catch (err) {
                 console.error(err);

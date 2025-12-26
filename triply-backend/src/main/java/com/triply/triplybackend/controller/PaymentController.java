@@ -36,4 +36,9 @@ public class PaymentController {
     public ResponseEntity<List<Payment>> getDriverHistory(@PathVariable Long userId) {
         return ResponseEntity.ok(paymentService.getDriverHistory(userId));
     }
+
+    @GetMapping("/report")
+    public ResponseEntity<?> getReport(@RequestParam Long userId, @RequestParam String role) {
+        return ResponseEntity.ok(paymentService.getPaymentReport(userId, role));
+    }
 }

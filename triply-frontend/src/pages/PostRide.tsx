@@ -215,34 +215,26 @@ const PostRide = () => {
 
             {/* Route */}
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="source" className="text-foreground">Pickup Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
-                  <Input
-                    id="source"
-                    placeholder="e.g., Mumbai Central"
-                    className="pl-10"
-                    value={form.source}
-                    onChange={(e) => update("source", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="destination" className="text-foreground">Drop-off Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
-                  <Input
-                    id="destination"
-                    placeholder="e.g., Pune Station"
-                    className="pl-10"
-                    value={form.destination}
-                    onChange={(e) => update("destination", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+              <LocationAutocomplete
+                label="Pickup Location"
+                value={form.source}
+                onChange={(val) => update("source", val)}
+                onSelect={(val, lat, lng) => {
+                  setForm(prev => ({ ...prev, source: val, sourceLat: lat, sourceLng: lng }));
+                }}
+                placeholder="e.g., Mumbai Central"
+                iconColor="text-primary"
+              />
+              <LocationAutocomplete
+                label="Drop-off Location"
+                value={form.destination}
+                onChange={(val) => update("destination", val)}
+                onSelect={(val, lat, lng) => {
+                  setForm(prev => ({ ...prev, destination: val, destLat: lat, destLng: lng }));
+                }}
+                placeholder="e.g., Pune Station"
+                iconColor="text-secondary"
+              />
             </div>
 
             {/* Date & Time */}
@@ -353,6 +345,94 @@ const PostRide = () => {
           </ul>
         </CardContent>
       </Card>
+    </div>
+  );
+};
+
+const LocationAutocomplete = ({
+  label,
+  value,
+  onChange,
+  onSelect,
+  placeholder,
+  iconColor = "text-primary"
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  onSelect: (val: string, lat?: number, lng?: number) => void;
+  placeholder: string;
+  iconColor?: string;
+}) => {
+  const [suggestions, setSuggestions] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (value.length > 2 && showSuggestions) {
+        setLoading(true);
+        try {
+          const results = await rideService.autocompleteLocations(value);
+          setSuggestions(results);
+        } catch (error) {
+          console.error("Autocomplete failed", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [value, showSuggestions]);
+
+  return (
+    <div className="space-y-2 relative">
+      <Label className="text-foreground">{label}</Label>
+      <div className="relative">
+        <MapPin className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${iconColor}`} />
+        <Input
+          placeholder={placeholder}
+          className="pl-10"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => {
+            if (value.length > 2) setShowSuggestions(true);
+          }}
+          onBlur={() => {
+            // Delay hiding to allow click event on suggestion
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
+          required
+        />
+        {loading && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+      </div>
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+          {suggestions.map((s, i) => (
+            <div
+              key={i}
+              className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+              onClick={() => {
+                onSelect(s.display_name, parseFloat(s.lat), parseFloat(s.lon));
+                setShowSuggestions(false);
+              }}
+            >
+              <MapPin className="mr-2 h-4 w-4 text-muted-foreground opacity-50" />
+              <span className="truncate">{s.display_name}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

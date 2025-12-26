@@ -67,9 +67,10 @@ const Payment = () => {
                 }
             });
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Payment Flow Error:", err);
-            alert("Payment Processing Failed. Please try again.");
+            const errorMessage = err.response?.data || err.message || "Payment Processing Failed";
+            alert(`Error: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

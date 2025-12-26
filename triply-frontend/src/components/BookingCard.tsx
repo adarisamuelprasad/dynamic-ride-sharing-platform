@@ -17,9 +17,10 @@ interface BookingCardProps {
     };
   };
   onCancel?: (id: number) => void;
+  onViewDetails?: (booking: any) => void;
 }
 
-const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
+const BookingCard = ({ booking, onCancel, onViewDetails }: BookingCardProps) => {
   const statusConfig = {
     CONFIRMED: {
       icon: CheckCircle,
@@ -101,19 +102,28 @@ const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
 
 
         {/* Actions */}
-        {booking.status !== "CANCELLED" && onCancel && (
-          <div className="mt-4 border-t pt-4">
+        <div className="mt-4 border-t pt-4 flex gap-2">
+          {onViewDetails && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1"
+              onClick={() => onViewDetails(booking)}
+            >
+              View Details
+            </Button>
+          )}
+          {booking.status !== "CANCELLED" && onCancel && (
             <Button
               variant="destructive"
               size="sm"
-              className="w-full"
+              className="flex-1"
               onClick={() => onCancel(booking.id)}
             >
-              Cancel Booking
+              Cancel
             </Button>
-          </div>
-        )
-        }
+          )}
+        </div>
       </CardContent>
     </Card >
   );

@@ -210,7 +210,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
 
       <CardContent className="p-5 flex-1 flex flex-col">
         {/* Route */}
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <div className="flex items-start gap-3">
             <div className="flex flex-col items-center mt-1">
               <div className="h-2.5 w-2.5 rounded-full bg-primary" />
@@ -228,6 +228,18 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               </div>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-0 right-0 h-6 text-xs px-2 text-muted-foreground hover:text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(ride.source)}&destination=${encodeURIComponent(ride.destination)}`, '_blank');
+            }}
+          >
+            <MapPin className="h-3 w-3 mr-1" />
+            View Map
+          </Button>
         </div>
 
         {/* Quick Details */}

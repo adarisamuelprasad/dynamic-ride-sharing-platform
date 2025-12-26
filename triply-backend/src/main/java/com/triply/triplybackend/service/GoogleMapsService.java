@@ -133,6 +133,37 @@ public class GoogleMapsService {
     }
 
     /**
+     * Search for locations matching the query string (Autocomplete)
+     * 
+     * @param query Search query (e.g., "Shamsha")
+     * @return List of location matches with display name and coordinates
+     */
+    public List<Map<String, Object>> autocomplete(String query) {
+        try {
+            // Nominatim API:
+            // https://nominatim.openstreetmap.org/search?q={query}&format=json&addressdetails=1&limit=5
+            String url = "https://nominatim.openstreetmap.org/search?q=" + query
+                    + "&format=json&addressdetails=1&limit=5";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "TriplyRideSharingApp/1.0");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<List<Map<String, Object>>> responseEntity = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                    });
+
+            return responseEntity.getBody();
+        } catch (Exception e) {
+            System.err.println("Error calling Nominatim Autocomplete API: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
      * Haversine formula for calculating distance between two points on Earth
      * Used as fallback when OpenRouteService API is unavailable
      */

@@ -110,5 +110,10 @@ export const rideService = {
     }> {
         const response = await axios.get(`${API_BASE}/estimate-fare?source=${source}&destination=${destination}`);
         return response.data;
+    },
+
+    async autocompleteLocations(query: string): Promise<{ display_name: string; lat: string; lon: string }[]> {
+        const response = await axios.get(`${API_BASE}/locations/autocomplete?query=${query}`);
+        return response.data;
     }
 };

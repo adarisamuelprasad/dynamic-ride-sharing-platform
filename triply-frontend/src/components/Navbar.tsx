@@ -146,6 +146,17 @@ const Navbar = () => {
               Find Rides
             </Button>
           </Link>
+          {(user?.role === 'PASSENGER' || user?.role === 'ROLE_PASSENGER') && (
+            <Link to="/my-bookings">
+              <Button
+                variant={isActive("/my-bookings") ? "outline" : "ghost"}
+                className={isActive("/my-bookings") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                My Bookings
+              </Button>
+            </Link>
+          )}
           <Link to="/post-ride">
             <Button
               variant={isActive("/post-ride") ? "outline" : "ghost"}
@@ -366,6 +377,13 @@ const Navbar = () => {
               Find Rides
             </Button>
           </Link>
+          {(user?.role === 'PASSENGER' || user?.role === 'ROLE_PASSENGER') && (
+            <Link to="/my-bookings" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                My Bookings
+              </Button>
+            </Link>
+          )}
           <Link to="/post-ride" onClick={() => setMobileMenuOpen(false)}>
             <Button variant="ghost" className="w-full justify-start">
               Offer Ride

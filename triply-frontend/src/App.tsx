@@ -16,6 +16,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
 import RideHistory from "./pages/RideHistory";
+import MyBookings from "./pages/MyBookings";
 import "./services/axiosConfig"; // Import axios configuration
 import { useWebSockets } from "./hooks/useWebSockets";
 
@@ -30,30 +31,30 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster position="top-right" />
-      {/* Temporarily disabled WebSocket notifications for debugging */}
-      {/* <NotificationWrapper> */}
-      <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-        <div className="min-h-screen">
-          <Navbar />
-          <main className="pt-24">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/post-ride" element={<PostRide />} />
-              <Route path="/ride-history" element={<RideHistory />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/payments" element={<Payment />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/history" element={<PaymentHistory />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </BrowserRouter>
-      {/* </NotificationWrapper> */}
+      <NotificationWrapper>
+        <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+          <div className="min-h-screen">
+            <Navbar />
+            <main className="pt-24">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/post-ride" element={<PostRide />} />
+                <Route path="/ride-history" element={<RideHistory />} />
+                <Route path="/my-bookings" element={<MyBookings />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/payments" element={<Payment />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/history" element={<PaymentHistory />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+        </BrowserRouter>
+      </NotificationWrapper>
     </TooltipProvider>
   </QueryClientProvider>
 );

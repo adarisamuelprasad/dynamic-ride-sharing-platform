@@ -88,107 +88,125 @@ const PaymentSuccess = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Date</p>
-                                        <p className="font-medium text-gray-900">
-                                            {ride?.departureTime ? new Date(ride.departureTime).toLocaleDateString() : 'N/A'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Time</p>
-                                        <p className="font-medium text-gray-900">
-                                            {ride?.departureTime ? new Date(ride.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
-                                        </p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Date</p>
+                                    <p className="font-medium text-gray-900">
+                                        {(() => {
+                                            if (!ride?.departureTime) return 'N/A';
+                                            try {
+                                                // Handle array format [yyyy, mm, dd, hh, mm]
+                                                if (Array.isArray(ride.departureTime)) {
+                                                    const [y, m, d] = ride.departureTime;
+                                                    return new Date(y, m - 1, d).toLocaleDateString();
+                                                }
+                                                return new Date(ride.departureTime).toLocaleDateString();
+                                            } catch (e) { return 'N/A'; }
+                                        })()}
+                                    </p>
                                 </div>
-
-                                <div className="border-t border-dashed border-gray-300 my-4"></div>
-
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Passengers</p>
-                                        <p className="font-bold text-gray-900">{bookingDetails?.seats || 1} Seat(s)</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Booking ID</p>
-                                        <p className="font-mono text-gray-900">#{bookingId || 'PENDING'}</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Time</p>
+                                    <p className="font-medium text-gray-900">
+                                        {(() => {
+                                            if (!ride?.departureTime) return 'N/A';
+                                            try {
+                                                // Handle array format [yyyy, mm, dd, hh, mm]
+                                                if (Array.isArray(ride.departureTime)) {
+                                                    const [, , d, h, min] = ride.departureTime;
+                                                    return new Date(0, 0, 0, h, min).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                }
+                                                return new Date(ride.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            } catch (e) { return 'N/A'; }
+                                        })()}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Ticket Footer (Barcode-ish) */}
-                            <div className="bg-gray-50 p-4 border-t border-gray-100 flex justify-between items-center">
-                                <div className="h-8 w-48 bg-gray-200" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 2px, #000 2px, #000 4px)' }}></div>
-                                <span className="text-xs text-gray-400">Valid for one ride</span>
+                            <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Passengers</p>
+                                    <p className="font-bold text-gray-900">{bookingDetails?.seats || 1} Seat(s)</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Booking ID</p>
+                                    <p className="font-mono text-gray-900">#{bookingId || 'PENDING'}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Receipt Section (Downloadable) */}
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-900">Payment Receipt</h2>
-                            <Button onClick={() => generatePDF(receiptRef, `receipt_${transactionId || 'triply'}`)} variant="outline" size="sm">
-                                <Download className="w-4 h-4 mr-2" /> Download Receipt
-                            </Button>
-                        </div>
-
-                        <div ref={receiptRef} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-6">
-                            <div className="text-center border-b border-gray-100 pb-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">Payment Receipt</h3>
-                                <p className="text-sm text-gray-500">Transaction ID: {transactionId || 'N/A'}</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-4">${Number(amount || 0).toFixed(2)}</p>
-                                <div className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold mt-2">
-                                    PAID
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Payment Method</span>
-                                    <span className="font-medium text-gray-900">Card ending in ****</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Date</span>
-                                    <span className="font-medium text-gray-900">{new Date().toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Ride Fare</span>
-                                    <span className="font-medium text-gray-900">${(Number(amount || 0) - 2).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Service Fee</span>
-                                    <span className="font-medium text-gray-900">$2.00</span>
-                                </div>
-                            </div>
-
-                            <div className="border-t border-gray-100 pt-6">
-                                <div className="flex justify-between font-bold text-base">
-                                    <span className="text-gray-900">Total</span>
-                                    <span className="text-indigo-600">${Number(amount || 0).toFixed(2)}</span>
-                                </div>
-                            </div>
-
-                            <div className="text-center pt-4">
-                                <p className="text-xs text-gray-400">Thank you for choosing Triply!</p>
-                            </div>
+                        {/* Ticket Footer (Barcode-ish) */}
+                        <div className="bg-gray-50 p-4 border-t border-gray-100 flex justify-between items-center">
+                            <div className="h-8 w-48 bg-gray-200" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 2px, #000 2px, #000 4px)' }}></div>
+                            <span className="text-xs text-gray-400">Valid for one ride</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-12 flex justify-center space-x-4">
-                    <Link to="/">
-                        <Button className="px-8 py-6 text-lg" variant="default">
-                            <Home className="w-5 h-5 mr-2" /> Back to Home
+                {/* Receipt Section (Downloadable) */}
+                <div>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-900">Payment Receipt</h2>
+                        <Button onClick={() => generatePDF(receiptRef, `receipt_${transactionId || 'triply'}`)} variant="outline" size="sm">
+                            <Download className="w-4 h-4 mr-2" /> Download Receipt
                         </Button>
-                    </Link>
-                    <Link to="/history">
-                        <Button className="px-8 py-6 text-lg" variant="secondary">
-                            My Ride History
-                        </Button>
-                    </Link>
+                    </div>
+
+                    <div ref={receiptRef} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-6">
+                        <div className="text-center border-b border-gray-100 pb-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">Payment Receipt</h3>
+                            <p className="text-sm text-gray-500">Transaction ID: {transactionId || 'N/A'}</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-4">${amount ? Number(amount).toFixed(2) : '0.00'}</p>
+                            <div className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold mt-2">
+                                PAID
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Payment Method</span>
+                                <span className="font-medium text-gray-900">Card ending in ****</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Date</span>
+                                <span className="font-medium text-gray-900">{new Date().toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Ride Fare</span>
+                                <span className="font-medium text-gray-900">${amount ? (Number(amount) - 2).toFixed(2) : '0.00'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Service Fee</span>
+                                <span className="font-medium text-gray-900">$2.00</span>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-gray-100 pt-6">
+                            <div className="flex justify-between font-bold text-base">
+                                <span className="text-gray-900">Total</span>
+                                <span className="text-indigo-600">${amount ? Number(amount).toFixed(2) : '0.00'}</span>
+                            </div>
+                        </div>
+
+                        <div className="text-center pt-4">
+                            <p className="text-xs text-gray-400">Thank you for choosing Triply!</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div className="mt-12 flex justify-center space-x-4">
+                <Link to="/">
+                    <Button className="px-8 py-6 text-lg" variant="default">
+                        <Home className="w-5 h-5 mr-2" /> Back to Home
+                    </Button>
+                </Link>
+                <Link to="/history">
+                    <Button className="px-8 py-6 text-lg" variant="secondary">
+                        My Ride History
+                    </Button>
+                </Link>
             </div>
         </div>
     );

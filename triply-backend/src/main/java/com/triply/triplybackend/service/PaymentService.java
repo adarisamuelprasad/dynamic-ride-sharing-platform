@@ -29,6 +29,9 @@ public class PaymentService {
 
     @Transactional
     public Payment processPayment(PaymentRequest request) {
+        if (request.getBookingId() == null) {
+            throw new RuntimeException("Booking ID cannot be null");
+        }
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
@@ -70,5 +73,36 @@ public class PaymentService {
 
     public List<Payment> getDriverHistory(Long driverId) {
         return paymentRepository.findByDriverId(driverId);
+    }
+
+    public com.triply.triplybackend.payload.PaymentReportResponse getPaymentReport(Long userId, String role) {
+        com.triply.triplybackend.payload.PaymentReportResponse report = new com.triply.triplybackend.payload.PaymentReportResponse();
+
+        if ("ROLE_ADMIN".equals(role)) {
+            List<Payment> allPayments = paymentRepository.findAll();
+            report.setTransactions(allPayments);
+            report.setTotalTransactions((long) allPayments.size());
+            double revenue = allPayments.stream().mapToDouble(Payment::getAmount).sum();
+            report.setTotalRevenue(revenue);
+        } else if ("ROLE_DRIVER".equals(role)) {
+            List<Payment> driverPayments = paymentRepository.findByDriverId(userId);
+            report.setEarningsHistory(driverPayments); // Drivers see earnings
+            report.setTransactions(driverPayments);
+            double earnings = driverPayments.stream().mapToDouble(Payment::getAmount).sum();
+            report.setTotalEarnings(earnings);
+
+            User driver = userRepository.findById(userId).orElse(null);
+            if (driver != null) {
+                report.setWalletBalance(driver.getWalletBalance());
+            }
+        } else {
+            // Passenger
+            List<Payment> passengerPayments = paymentRepository.findByPassengerId(userId);
+            report.setTransactions(passengerPayments);
+            double spent = passengerPayments.stream().mapToDouble(Payment::getAmount).sum();
+            report.setTotalSpent(spent);
+        }
+
+        return report;
     }
 }

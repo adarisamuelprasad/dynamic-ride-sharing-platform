@@ -11,7 +11,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByPassengerId(Long passengerId);
 
     // Check if passenger already has a booking for this ride
-    java.util.Optional<Booking> findByPassengerIdAndRide_Id(Long passengerId, Long rideId);
+    List<Booking> findByPassengerIdAndRide_Id(Long passengerId, Long rideId);
 
     // Find bookings by ride ID
     List<Booking> findByRide_Id(Long rideId);
