@@ -37,10 +37,12 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       // Redirect to login with ride ID
       navigate(`/login?redirect=/book&rideId=${ride.id}`);
     } else {
-      // User is logged in, proceed with booking
+      // User is logged in, redirect to payment
       if (onBook) {
-        onBook(ride);
+        console.log("Redirecting to payment for ride:", ride.id);
+        // onBook(ride); // Removed direct booking
         setIsDetailsOpen(false);
+        navigate('/payments', { state: { ride, booking: { seats: 1 } } }); // Default 1 seat for now
       }
     }
   };
@@ -410,7 +412,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                     ) : (
                       onBook && authService.currentUser?.role !== 'ROLE_ADMIN' && (
                         <Button className="w-full" onClick={handleBookClick} variant="gradient">
-                          Book This Ride
+                          Proceed to Pay
                         </Button>
                       )
                     )}
@@ -436,7 +438,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               className="flex-1"
               onClick={handleBookClick}
             >
-              Book
+              Proceed to Pay
             </Button>
           )}
         </div>

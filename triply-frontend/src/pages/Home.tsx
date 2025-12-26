@@ -77,20 +77,8 @@ const Home = () => {
       return;
     }
 
-    if (confirm(`Book a seat on this ride for ₹${ride.farePerSeat}?`)) {
-      try {
-        await bookingService.bookRide(ride.id, 1);
-        toast.success("Ride booked successfully!");
-        // Refresh data
-        const ridesRes = await rideService.getAllRides();
-        const now = new Date();
-        const available = ridesRes.filter(r => new Date(r.departureTime) >= now && r.availableSeats > 0);
-        const sorted = available.sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
-        setAllRides(sorted);
-      } catch (error: any) {
-        toast.error(typeof error.response?.data === 'string' ? error.response.data : (error.response?.data?.message || "Booking failed"));
-      }
-    }
+    // Redirect to Payment Page
+    navigate('/payments', { state: { ride, booking: { seats: 1 } } });
   };
 
   const features = [

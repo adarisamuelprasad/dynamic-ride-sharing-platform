@@ -11,7 +11,9 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import PostRide from "./pages/PostRide";
 import AdminDashboard from "./pages/AdminDashboard";
-import Payments from "./pages/Payments";
+import Payment from "./pages/Payment";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
 import RideHistory from "./pages/RideHistory";
 import "./services/axiosConfig"; // Import axios configuration
@@ -43,7 +45,9 @@ const App = () => (
               <Route path="/post-ride" element={<PostRide />} />
               <Route path="/ride-history" element={<RideHistory />} />
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/payments" element={<Payments />} />
+              <Route path="/payments" element={<Payment />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/history" element={<PaymentHistory />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

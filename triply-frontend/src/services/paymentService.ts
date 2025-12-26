@@ -1,72 +1,34 @@
-import axios from './axiosConfig';
+import axios from 'axios';
+import { authService } from './authService';
 
-const API_BASE = 'http://localhost:8082/api/payments';
+const API_URL = 'http://localhost:8082/api/payments';
 
-export interface PaymentRecord {
-    id: number;
-    amount: number;
-    status: string;
-    type: string;
-    transactionId: string;
-    createdAt: string;
-    booking: {
-        id: number;
-        ride: {
-            source: string;
-            destination: string;
-        };
-    };
-}
+export const processPayment = async (bookingId: number, amount: number, paymentMethod: string) => {
+    const user = authService.currentUser;
+    if (!user) throw new Error("User not logged in");
 
-export interface PaymentReport {
-    totalRevenue?: number;
-    totalTransactions?: number;
-    totalEarnings?: number;
-    walletBalance?: number;
-    totalSpent?: number;
-    transactions?: PaymentRecord[];
-    earningsHistory?: PaymentRecord[];
-    bookings?: PaymentRecord[];
-}
-
-export const paymentService = {
-    async getHistory(): Promise<PaymentRecord[]> {
-        const response = await axios.get<PaymentRecord[]>(`${API_BASE}/history`);
-        return response.data;
-    },
-
-    async confirmStripePayment(paymentIntentId: string): Promise<void> {
-        await axios.post(`${API_BASE}/confirm`, { paymentIntentId });
-    },
-
-    async getReport(): Promise<PaymentReport> {
-        const response = await axios.get<PaymentReport>(`${API_BASE}/report`);
-        return response.data;
-    },
-
-    async downloadReport(): Promise<void> {
-        const response = await axios.get(`${API_BASE}/download`, {
-            responseType: 'blob'
+    try {
+        const response = await axios.post(`${API_URL}/process`, {
+            bookingId,
+            amount,
+            paymentMethod,
+            stripeToken: "tok_visa_mock" // Mock token
         });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'payment_report.csv');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    },
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
 
-    async downloadReportPdf(): Promise<void> {
-        const response = await axios.get(`${API_BASE}/download/pdf`, {
-            responseType: 'blob'
-        });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'payment_report.pdf');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+export const getPassengerHistory = async () => {
+    const user = authService.currentUser;
+    if (!user) return [];
+
+    try {
+        const response = await axios.get(`${API_URL}/history/passenger/${user.id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching history", error);
+        return [];
     }
 };

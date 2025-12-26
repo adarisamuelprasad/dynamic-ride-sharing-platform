@@ -38,7 +38,14 @@ export const authService = {
         const stored = localStorage.getItem('triply_user');
         const token = localStorage.getItem('triply_token');
         if (stored && token) {
-            this.currentUser = JSON.parse(stored);
+            try {
+                this.currentUser = JSON.parse(stored);
+            } catch (e) {
+                console.error("Failed to parse stored user", e);
+                localStorage.removeItem('triply_user');
+                localStorage.removeItem('triply_token');
+                this.currentUser = null;
+            }
         }
     },
 

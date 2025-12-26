@@ -90,52 +90,43 @@ public class GoogleMapsService {
     }
 
     /**
-     * Get coordinates for a given location name using OpenRouteService Geocoding
-     * API
+     * Get coordinates for a given location name using Nominatim (OpenStreetMap) API
+     * Free to use, no API key required for low volume.
      * 
      * @param locationName Location name (e.g., "Mumbai")
      * @return Array of [lat, lng] or null if not found
      */
     public double[] getCoordinates(String locationName) {
-        if (apiKey == null || apiKey.isEmpty()) {
-            return null;
-        }
-
         try {
-            String url = "https://api.openrouteservice.org/geocode/search?text=" + locationName + "&size=1";
+            // Nominatim API:
+            // https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1
+            String url = "https://nominatim.openstreetmap.org/search?q=" + locationName + "&format=json&limit=1";
+
+            // Nominatim requires a User-Agent header
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", apiKey);
+            headers.set("User-Agent", "TriplyRideSharingApp/1.0");
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            @SuppressWarnings("null")
-            ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(
+            ResponseEntity<List<Map<String, Object>>> responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {
                     });
 
-            Map<String, Object> response = responseEntity.getBody();
-            if (response != null) {
-                @SuppressWarnings("unchecked")
-                List<Object> features = (List<Object>) response.get("features");
-                if (features != null && !features.isEmpty()) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> feature = (Map<String, Object>) features.get(0);
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> geometry = (Map<String, Object>) feature.get("geometry");
-                    if (geometry != null) {
-                        @SuppressWarnings("unchecked")
-                        List<Number> coords = (List<Number>) geometry.get("coordinates");
-                        if (coords != null && coords.size() >= 2) {
-                            // ORS returns [lng, lat]
-                            return new double[] { coords.get(1).doubleValue(), coords.get(0).doubleValue() };
-                        }
-                    }
+            List<Map<String, Object>> response = responseEntity.getBody();
+
+            if (response != null && !response.isEmpty()) {
+                Map<String, Object> firstResult = response.get(0);
+                String latStr = (String) firstResult.get("lat");
+                String lonStr = (String) firstResult.get("lon");
+
+                if (latStr != null && lonStr != null) {
+                    return new double[] { Double.parseDouble(latStr), Double.parseDouble(lonStr) };
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error calling OpenRouteService Geocoding API: " + e.getMessage());
+            System.err.println("Error calling Nominatim Geocoding API: " + e.getMessage());
         }
 
         return null;
