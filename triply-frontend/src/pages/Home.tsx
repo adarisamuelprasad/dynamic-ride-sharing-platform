@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Shield, Wallet, MapPin, ArrowRight, Sparkles } from "lucide-react";
+import { Search, Shield, Wallet, MapPin, ArrowRight, Sparkles, Calendar, Activity, PawPrint, Cigarette, Zap, Armchair } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import axios from "@/services/axiosConfig";
@@ -23,7 +23,22 @@ const Home = () => {
   const [filteredRides, setFilteredRides] = useState<Ride[]>([]);
   const [filterSource, setFilterSource] = useState("");
   const [filterDest, setFilterDest] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterPets, setFilterPets] = useState(false);
+  const [filterSmoking, setFilterSmoking] = useState(false);
+  const [filterInstant, setFilterInstant] = useState(false);
+  const [filterMax2, setFilterMax2] = useState(false);
+  const [sortOption, setSortOption] = useState("earliest");
+  const [user, setUser] = useState(authService.currentUser);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Subscribe to auth changes
+    const unsubscribe = authService.subscribe((u) => {
+      setUser(u);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -58,12 +73,42 @@ const Home = () => {
   useEffect(() => {
     const lowerSource = filterSource.toLowerCase();
     const lowerDest = filterDest.toLowerCase();
-    const filtered = allRides.filter(ride =>
+
+    let filtered = allRides.filter(ride =>
       ride.source.toLowerCase().includes(lowerSource) &&
       ride.destination.toLowerCase().includes(lowerDest)
     );
-    setFilteredRides(filtered);
-  }, [filterSource, filterDest, allRides]);
+
+    if (filterDate) {
+      filtered = filtered.filter(ride => ride.departureTime.startsWith(filterDate));
+    }
+
+    if (filterPets) filtered = filtered.filter(r => r.petsAllowed);
+    if (filterSmoking) filtered = filtered.filter(r => r.smokingAllowed);
+    if (filterInstant) filtered = filtered.filter(r => r.instantBooking);
+    if (filterMax2) filtered = filtered.filter(r => r.maxTwoInBack);
+
+    filtered.sort((a, b) => {
+      if (sortOption === "earliest") {
+        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+      } else if (sortOption === "price_asc") {
+        return a.farePerSeat - b.farePerSeat;
+      } else if (sortOption === "price_desc") {
+        return b.farePerSeat - a.farePerSeat;
+      } else if (sortOption === "seats") {
+        return b.availableSeats - a.availableSeats;
+      }
+      return 0;
+    });
+
+    setFilteredRides([...filtered]); // Create new reference
+  }, [filterSource, filterDest, filterDate, filterPets, filterSmoking, filterInstant, filterMax2, sortOption, allRides]);
+
+  useEffect(() => {
+    if (user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN') {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleBookRide = async (ride: any) => {
     if (!authService.isLoggedIn()) {
@@ -111,6 +156,201 @@ const Home = () => {
     },
   ];
 
+  // --- ADMIN VIEW ---
+  if (user?.role === 'ROLE_ADMIN') {
+    return null;
+  }
+
+  // --- LOGGED IN USER VIEW (Passenger / Driver) ---
+  if (user) {
+    return (
+      <div className="min-h-screen pt-0 px-12 pb-20">
+        <div className="mx-auto max-w-7xl animate-fade-in">
+          {/* Welcome Header */}
+          <div className="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h1 className="font-display text-4xl font-bold text-foreground">
+                Welcome back, <span className="gradient-text">{user.name}</span>
+              </h1>
+              <p className="mt-2 text-lg text-muted-foreground">
+                {user.role === 'ROLE_DRIVER' || user.role === 'DRIVER'
+                  ? "Ready to earn? Offer a ride today."
+                  : "Where are you heading today?"}
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              {/* Quick Actions */}
+              {(user.role === 'ROLE_DRIVER' || user.role === 'DRIVER') && (
+                <Link to="/post-ride">
+                  <Button variant="gradient" size="lg" className="shadow-lg shadow-primary/20">
+                    Offer a New Ride
+                  </Button>
+                </Link>
+              )}
+              {(user.role === 'ROLE_PASSENGER' || user.role === 'PASSENGER') && (
+                <Link to="/dashboard">
+                  <Button variant="gradient" size="lg" className="shadow-lg shadow-primary/20">
+                    Find a Ride
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Main Content Area - Ride Feed and Stats */}
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Left Sidebar - Quick Stats / Info */}
+            <div className="hidden lg:block space-y-6">
+
+
+              {/* Live Activity Feed */}
+              <Card glass className="p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-primary" />
+                    Live Feed
+                  </h4>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {allRides.slice(0, 4).map((r, i) => (
+                    <div key={i} className="flex gap-3 items-start group cursor-pointer" onClick={() => handleBookRide(r)}>
+                      <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-primary/20 transition-transform" />
+                      <div>
+                        <p className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+                          New ride: {r.source} to {r.destination}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(r.departureTime).toLocaleDateString()} • ₹{r.farePerSeat}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground text-center">
+                      {stats.activeRiders} users online now
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Main Feed */}
+            <div className="lg:col-span-3 space-y-6">
+              <Card glass className="p-6 h-[650px] flex flex-col">
+                <div className="mb-6">
+                  <h3 className="font-display text-xl font-bold text-foreground mb-4">
+                    Available Rides
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Filter Source"
+                          value={filterSource}
+                          onChange={(e) => setFilterSource(e.target.value)}
+                          className="pl-9 bg-muted/20"
+                        />
+                      </div>
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Filter Dest"
+                          value={filterDest}
+                          onChange={(e) => setFilterDest(e.target.value)}
+                          className="pl-9 bg-muted/20"
+                        />
+                      </div>
+                      <div className="relative flex-1 sm:max-w-[180px]">
+                        <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="date"
+                          value={filterDate}
+                          onChange={(e) => setFilterDate(e.target.value)}
+                          className="pl-9 bg-muted/20"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Amenity Filters */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={filterPets ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 text-xs rounded-full gap-1.5"
+                        onClick={() => setFilterPets(!filterPets)}
+                      >
+                        <PawPrint className="h-3 w-3" /> Pets Allowed
+                      </Button>
+                      <Button
+                        variant={filterSmoking ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 text-xs rounded-full gap-1.5"
+                        onClick={() => setFilterSmoking(!filterSmoking)}
+                      >
+                        <Cigarette className="h-3 w-3" /> Smoking OK
+                      </Button>
+                      <Button
+                        variant={filterInstant ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 text-xs rounded-full gap-1.5"
+                        onClick={() => setFilterInstant(!filterInstant)}
+                      >
+                        <Zap className="h-3 w-3" /> Instant Book
+                      </Button>
+                      <Button
+                        variant={filterMax2 ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 text-xs rounded-full gap-1.5"
+                        onClick={() => setFilterMax2(!filterMax2)}
+                      >
+                        <Armchair className="h-3 w-3" /> Max 2 in Back
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <select
+                        className="h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                      >
+                        <option value="earliest">Earliest Departure</option>
+                        <option value="price_asc">Lowest Price</option>
+                        <option value="price_desc">Highest Price</option>
+                        <option value="seats">Most Seats Available</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-[400px]">
+                  {filteredRides.length === 0 ? (
+                    <div className="flex flex-col h-full items-center justify-center text-center text-muted-foreground min-h-[200px]">
+                      <p>{allRides.length === 0 ? "No active rides in the system." : "No rides match your filter."}</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+                      {filteredRides.map(ride => (
+                        <RideCard key={ride.id} ride={ride as any} onBook={handleBookRide} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- GUEST LANDING PAGE VIEW ---
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -142,13 +382,11 @@ const Home = () => {
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                {(!authService.currentUser || authService.currentUser.role === 'ROLE_DRIVER' || authService.currentUser.role === 'DRIVER' || authService.currentUser.role === 'ROLE_ADMIN') && (
-                  <Link to="/post-ride">
-                    <Button variant="outline" size="xl">
-                      Offer a Ride
-                    </Button>
-                  </Link>
-                )}
+                <Link to="/login">
+                  <Button variant="outline" size="xl">
+                    Sign In
+                  </Button>
+                </Link>
               </div>
 
               {/* Stats */}
@@ -201,11 +439,6 @@ const Home = () => {
                   {filteredRides.length === 0 ? (
                     <div className="flex flex-col h-40 items-center justify-center text-center text-muted-foreground">
                       <p>{allRides.length === 0 ? "No active rides in the system." : "No rides match your filter."}</p>
-                      {allRides.length === 0 && (!authService.currentUser || authService.currentUser.role === 'ROLE_DRIVER' || authService.currentUser.role === 'DRIVER' || authService.currentUser.role === 'ROLE_ADMIN') && (
-                        <Link to="/post-ride" className="mt-2 text-primary hover:underline">
-                          Offer a ride!
-                        </Link>
-                      )}
                     </div>
                   ) : (
                     filteredRides.map(ride => (

@@ -28,5 +28,54 @@ export const bookingService = {
     async getMyBookings(): Promise<Booking[]> {
         const response = await axios.get<Booking[]>(`${API_BASE}/my`);
         return response.data;
+<<<<<<< Updated upstream
+=======
+    },
+
+    async downloadReport(): Promise<void> {
+        const response = await axios.get(`${API_BASE}/download`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'booking_report.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    async downloadReportPdf(): Promise<void> {
+        const response = await axios.get(`${API_BASE}/download/pdf`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'booking_report.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    async getDriverRequests(): Promise<Booking[]> {
+        const response = await axios.get<Booking[]>(`${API_BASE}/driver-requests`);
+        return response.data;
+    },
+
+    async respondToBooking(bookingId: number, status: 'APPROVED' | 'REJECTED'): Promise<Booking> {
+        const response = await axios.put<Booking>(`${API_BASE}/${bookingId}/respond`, null, {
+            params: { status }
+        });
+        return response.data;
+    },
+
+    async finalizePayment(bookingId: number, paymentMethod: string): Promise<Booking | BookingResponse> {
+        const response = await axios.post<Booking | BookingResponse>(`${API_BASE}/${bookingId}/pay`, {
+            paymentMethod
+        });
+        return response.data;
+    },
+
+    async cancelBooking(bookingId: number): Promise<Booking> {
+        const response = await axios.post<Booking>(`${API_BASE}/cancel/${bookingId}`);
+        return response.data;
+>>>>>>> Stashed changes
     }
 };

@@ -17,12 +17,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private void exposeDirectory(String dirName, ResourceHandlerRegistry registry) {
         Path uploadDir = Paths.get(dirName);
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
+        String uploadPath = uploadDir.toUri().toString();
 
         if (dirName.startsWith("../"))
             dirName = dirName.replace("../", "");
 
         registry.addResourceHandler("/" + dirName + "/**")
-                .addResourceLocations("file:/" + uploadPath + "/");
+                .addResourceLocations(uploadPath);
     }
 }

@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Users, IndianRupee, User, Info, Sun, Wind, Car } from "lucide-react";
+import { MapPin, Calendar, Users, IndianRupee, User, Info, Sun, Wind, Car, Star, MessageSquareQuote, Zap, Armchair, PawPrint, Cigarette } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/authService";
 import { Ride, rideService } from "@/services/rideService";
+import { bookingService } from "@/services/bookingService";
 import { userService } from "@/services/userService";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -31,16 +32,36 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
   const navigate = useNavigate();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const handleBookClick = () => {
+  const handleBookClick = async () => {
     // Check if user is logged in
     if (!authService.isLoggedIn()) {
       // Redirect to login with ride ID
       navigate(`/login?redirect=/book&rideId=${ride.id}`);
     } else {
+<<<<<<< Updated upstream
       // User is logged in, proceed with booking
       if (onBook) {
         onBook(ride);
         setIsDetailsOpen(false);
+=======
+      const user = authService.currentUser;
+      if (user?.role === 'DRIVER' || user?.role === 'ROLE_DRIVER' || user?.role === 'ROLE_ADMIN') {
+        toast.error("Drivers and Admins cannot book rides.");
+        return;
+      }
+
+      // User is logged in, request ride
+      if (onBook) {
+        try {
+          setIsDetailsOpen(false);
+          await bookingService.bookRide(ride.id, 1);
+          toast.success("Request Sent Successfully!");
+        } catch (error: any) {
+          console.error(error);
+          const msg = typeof error.response?.data === 'string' ? error.response.data : "Failed to request ride";
+          toast.error(msg);
+        }
+>>>>>>> Stashed changes
       }
     }
   };
@@ -69,6 +90,10 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
     plateNumber: "",
     acAvailable: false,
     sunroofAvailable: false,
+    instantBooking: false,
+    maxTwoInBack: false,
+    petsAllowed: false,
+    smokingAllowed: false,
     imageUrl: "",
     extraImages: [] as string[]
   });
@@ -89,6 +114,10 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       plateNumber: ride.vehiclePlate || "",
       acAvailable: ride.acAvailable || false,
       sunroofAvailable: ride.sunroofAvailable || false,
+      instantBooking: ride.instantBooking || false,
+      maxTwoInBack: ride.maxTwoInBack || false,
+      petsAllowed: ride.petsAllowed || false,
+      smokingAllowed: ride.smokingAllowed || false,
       imageUrl: ride.vehicleImage || "",
       extraImages: ride.extraImages ? [...ride.extraImages] : []
     });
@@ -114,8 +143,28 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       // Upload all selected files
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i];
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast.error(`File ${file.name} is not an image`);
+          continue;
+        }
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`File ${file.name} is too large. Max size is 10MB`);
+          continue;
+        }
+
+        console.log(`Uploading file: ${file.name}, size: ${(file.size / 1024).toFixed(2)}KB`);
         const url = await userService.uploadImage(file);
+        console.log(`Upload successful: ${url}`);
         newUrls.push(url);
+      }
+
+      if (newUrls.length === 0) {
+        toast.error("No images were uploaded successfully");
+        return;
       }
 
       setEditFormData(prev => {
@@ -137,12 +186,15 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
           extraImages: newExtra
         };
       });
-      toast.success("Images uploaded successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to upload images");
+      toast.success(`${newUrls.length} image(s) uploaded successfully`);
+    } catch (error: any) {
+      console.error("Image upload error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to upload images";
+      toast.error(errorMessage);
     } finally {
       setEditLoading(false);
+      // Reset the file input
+      e.target.value = '';
     }
   };
 
@@ -173,7 +225,11 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
         imageUrl: editFormData.imageUrl,
         extraImages: editFormData.extraImages,
         acAvailable: editFormData.acAvailable,
-        sunroofAvailable: editFormData.sunroofAvailable
+        sunroofAvailable: editFormData.sunroofAvailable,
+        instantBooking: editFormData.instantBooking,
+        maxTwoInBack: editFormData.maxTwoInBack,
+        petsAllowed: editFormData.petsAllowed,
+        smokingAllowed: editFormData.smokingAllowed
       });
 
       toast.success("Ride details updated successfully!");
@@ -207,6 +263,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       </div>
 
       <CardContent className="p-5 flex-1 flex flex-col">
+<<<<<<< Updated upstream
         {/* Route */}
         <div className="mb-4">
           <div className="flex items-start gap-3">
@@ -219,28 +276,72 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               <div>
                 <p className="text-xs text-muted-foreground">From</p>
                 <p className="font-semibold text-foreground text-sm line-clamp-1" title={ride.source}>{ride.source}</p>
+=======
+        {/* Route Timeline */}
+        <div className="mb-6 relative">
+          <div className="flex items-center justify-between font-bold text-lg mb-1">
+            <span>{format(departureDate, "HH:mm")}</span>
+            {ride.distanceKm && (
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] text-muted-foreground font-normal">{(ride.distanceKm / 1000).toFixed(1)}h</span> {/* Assuming 1000 is error, wait. distance is km. 60km/h */}
+>>>>>>> Stashed changes
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">To</p>
-                <p className="font-semibold text-foreground text-sm line-clamp-1" title={ride.destination}>{ride.destination}</p>
-              </div>
+            )}
+            <span className="text-muted-foreground">
+              {ride.distanceKm ? format(new Date(departureDate.getTime() + (ride.distanceKm / 50) * 3600000), "HH:mm") : "--:--"}
+            </span>
+          </div>
+
+          <div className="relative flex items-center gap-2 mb-2">
+            <div className="h-3 w-3 rounded-full border-2 border-primary bg-background z-10" />
+            <div className="flex-1 h-[2px] bg-muted-foreground/20 relative">
+              {ride.distanceKm && (
+                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[150%] text-[10px] bg-background px-1 text-muted-foreground">
+                  {(ride.distanceKm).toFixed(0)} km
+                </span>
+              )}
             </div>
+            <div className="h-3 w-3 rounded-full border-2 border-primary bg-background z-10" />
+          </div>
+
+          <div className="flex justify-between text-sm text-foreground font-medium">
+            <span className="truncate max-w-[45%]" title={ride.source}>{ride.source}</span>
+            <span className="truncate max-w-[45%] text-right" title={ride.destination}>{ride.destination}</span>
           </div>
         </div>
 
-        {/* Quick Details */}
-        <div className="mb-4 grid grid-cols-2 gap-y-2 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />
-            <span className="text-xs">{format(departureDate, "MMM d, HH:mm")}</span>
+        {/* Quick Details & Amenities */}
+        <div className="mb-4 space-y-3">
+          <div className="flex justify-between items-center bg-muted/30 p-2 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg">₹{ride.farePerSeat}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span className={ride.availableSeats > 0 ? "text-green-600 font-medium" : "text-red-500"}>
+                {ride.availableSeats} seats
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground justify-end">
-            <IndianRupee className="h-3.5 w-3.5" />
-            <span className="font-bold text-foreground">₹{ride.farePerSeat}</span>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{ride.driver?.name}</span>
+              <div className="flex items-center text-xs text-yellow-500">
+                <Star className="h-3 w-3 fill-current mr-0.5" />
+                {ride.driver?.averageRating?.toFixed(1) || "New"}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-            <User className="h-3.5 w-3.5" />
-            <span className="text-xs">{ride.driver?.name} • {model}</span>
+
+          {/* Quick Amenities Icons */}
+          <div className="flex gap-2">
+            {ride.acAvailable && <span title="AC"><Wind className="h-3 w-3 text-blue-500" /></span>}
+            {ride.petsAllowed && <span title="Pets Allowed"><PawPrint className="h-3 w-3 text-emerald-500" /></span>}
+            {ride.smokingAllowed && <span title="Smoking Allowed"><Cigarette className="h-3 w-3 text-gray-500" /></span>}
+            {ride.instantBooking && <span title="Instant Booking"><Zap className="h-3 w-3 text-orange-500" /></span>}
+            {ride.maxTwoInBack && <span title="Max 2 in Back"><Armchair className="h-3 w-3 text-purple-500" /></span>}
           </div>
         </div>
 
@@ -311,6 +412,15 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                         <h4 className="text-sm font-medium leading-none">Driver</h4>
                         <p className="text-sm text-muted-foreground">{ride.driver?.name}</p>
                         <p className="text-xs text-muted-foreground">{ride.driver?.phone}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                          <span className="text-xs font-medium">
+                            {ride.driver?.averageRating ? ride.driver.averageRating.toFixed(1) : "New"}
+                            <span className="text-muted-foreground ml-1">
+                              ({ride.driver?.reviewCount || 0} reviews)
+                            </span>
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -331,6 +441,26 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                             <Sun className="h-3 w-3" /> Sunroof
                           </div>
                         )}
+                        {ride.instantBooking && (
+                          <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1 text-xs text-orange-600 dark:text-orange-400">
+                            <Zap className="h-3 w-3" /> Instant Booking
+                          </div>
+                        )}
+                        {ride.maxTwoInBack && (
+                          <div className="flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-1 text-xs text-purple-600 dark:text-purple-400">
+                            <Armchair className="h-3 w-3" /> Max 2 in back
+                          </div>
+                        )}
+                        {ride.petsAllowed && (
+                          <div className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-xs text-emerald-600 dark:text-emerald-400">
+                            <PawPrint className="h-3 w-3" /> Pets Allowed
+                          </div>
+                        )}
+                        {ride.smokingAllowed && (
+                          <div className="flex items-center gap-1 rounded-full bg-gray-500/10 px-2 py-1 text-xs text-gray-600 dark:text-gray-400">
+                            <Cigarette className="h-3 w-3" /> Smoking Allowed
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -344,6 +474,38 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                         <span className="text-sm font-medium">{format(departureDate, "MMMM d, yyyy 'at' h:mm a")}</span>
                       </div>
                     </div>
+
+                    {ride.reviews && ride.reviews.length > 0 && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <h4 className="text-sm font-medium leading-none flex items-center gap-2">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          Reviews ({ride.reviews.length})
+                        </h4>
+                        <div className="space-y-3 max-h-40 overflow-y-auto pr-1">
+                          {ride.reviews.map((review: any) => (
+                            <div key={review.id} className="bg-muted/50 p-2.5 rounded-lg text-sm space-y-1">
+                              <div className="flex justify-between items-start">
+                                <span className="font-semibold text-xs">{review.reviewer?.name || "Passenger"}</span>
+                                <div className="flex text-yellow-500">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-muted opacity-20"}`} />
+                                  ))}
+                                </div>
+                              </div>
+                              {review.comment && (
+                                <div className="text-muted-foreground text-xs flex gap-1.5 mt-1">
+                                  <MessageSquareQuote className="h-3 w-3 flex-shrink-0 opacity-50" />
+                                  <span className="italic">{review.comment}</span>
+                                </div>
+                              )}
+                              <div className="text-[10px] text-muted-foreground text-right pt-1">
+                                {new Date(review.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="space-y-4">
@@ -384,15 +546,31 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Features</Label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 text-sm">
+                      <Label>Features & Amenities</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
                           <input type="checkbox" checked={editFormData.acAvailable} onChange={e => setEditFormData({ ...editFormData, acAvailable: e.target.checked })} className="rounded border-gray-300" />
-                          AC Available
+                          <Wind className="h-3 w-3" /> AC
                         </label>
-                        <label className="flex items-center gap-2 text-sm">
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
                           <input type="checkbox" checked={editFormData.sunroofAvailable} onChange={e => setEditFormData({ ...editFormData, sunroofAvailable: e.target.checked })} className="rounded border-gray-300" />
-                          Sunroof
+                          <Sun className="h-3 w-3" /> Sunroof
+                        </label>
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
+                          <input type="checkbox" checked={editFormData.instantBooking} onChange={e => setEditFormData({ ...editFormData, instantBooking: e.target.checked })} className="rounded border-gray-300" />
+                          <Zap className="h-3 w-3" /> Instant
+                        </label>
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
+                          <input type="checkbox" checked={editFormData.maxTwoInBack} onChange={e => setEditFormData({ ...editFormData, maxTwoInBack: e.target.checked })} className="rounded border-gray-300" />
+                          <Armchair className="h-3 w-3" /> Max 2 Back
+                        </label>
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
+                          <input type="checkbox" checked={editFormData.petsAllowed} onChange={e => setEditFormData({ ...editFormData, petsAllowed: e.target.checked })} className="rounded border-gray-300" />
+                          <PawPrint className="h-3 w-3" /> Pets
+                        </label>
+                        <label className="flex items-center gap-2 text-sm border p-2 rounded hover:bg-muted/50 cursor-pointer">
+                          <input type="checkbox" checked={editFormData.smokingAllowed} onChange={e => setEditFormData({ ...editFormData, smokingAllowed: e.target.checked })} className="rounded border-gray-300" />
+                          <Cigarette className="h-3 w-3" /> Smoking
                         </label>
                       </div>
                     </div>
@@ -402,15 +580,19 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               <DialogFooter>
                 {!isEditing ? (
                   <>
-                    {isOwner ? (
+                    {isOwner && ride.status !== 'COMPLETED' && ride.status !== 'CANCELLED' ? (
                       <Button className="w-full" onClick={startEditing} variant="outline">
                         <Edit2 className="h-4 w-4 mr-2" />
                         Edit Details
                       </Button>
                     ) : (
-                      onBook && authService.currentUser?.role !== 'ROLE_ADMIN' && (
+                      onBook && authService.currentUser?.role !== 'ROLE_ADMIN' && ride.status !== 'COMPLETED' && ride.status !== 'CANCELLED' && (
                         <Button className="w-full" onClick={handleBookClick} variant="gradient">
+<<<<<<< Updated upstream
                           Book This Ride
+=======
+                          Request Ride
+>>>>>>> Stashed changes
                         </Button>
                       )
                     )}
@@ -436,7 +618,11 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               className="flex-1"
               onClick={handleBookClick}
             >
+<<<<<<< Updated upstream
               Book
+=======
+              Request Ride
+>>>>>>> Stashed changes
             </Button>
           )}
         </div>

@@ -43,7 +43,7 @@ const Login = () => {
       navigate('/admin');
     } else {
       // Regular users go to dashboard
-      navigate('/dashboard');
+      navigate('/');
     }
   };
 

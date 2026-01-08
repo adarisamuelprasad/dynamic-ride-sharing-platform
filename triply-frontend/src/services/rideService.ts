@@ -1,4 +1,5 @@
 import axios from './axiosConfig';
+import { Review } from './reviewService';
 
 const API_BASE = 'http://localhost:8081/api/rides';
 
@@ -13,6 +14,7 @@ export interface Ride {
     sourceLng?: number;
     destLat?: number;
     destLng?: number;
+    distanceKm?: number;
     driver: {
         id: number;
         name: string;
@@ -22,13 +24,24 @@ export interface Ride {
         licensePlate: string;
         capacity: number;
         driverVerified: boolean;
+        averageRating?: number;
+        reviewCount?: number;
     };
     vehicleModel?: string;
     vehiclePlate?: string;
     vehicleImage?: string;
     acAvailable?: boolean;
     sunroofAvailable?: boolean;
+    smokingAllowed?: boolean;
+    petsAllowed?: boolean;
+    instantBooking?: boolean;
+    maxTwoInBack?: boolean;
     extraImages?: string[];
+<<<<<<< Updated upstream
+=======
+    status?: string;
+    reviews?: Review[];
+>>>>>>> Stashed changes
 }
 
 export interface RideRequest {
@@ -49,6 +62,10 @@ export interface RideRequest {
     imageUrl?: string;
     acAvailable?: boolean;
     sunroofAvailable?: boolean;
+    smokingAllowed?: boolean;
+    petsAllowed?: boolean;
+    instantBooking?: boolean;
+    maxTwoInBack?: boolean;
 }
 
 export interface SearchParams {

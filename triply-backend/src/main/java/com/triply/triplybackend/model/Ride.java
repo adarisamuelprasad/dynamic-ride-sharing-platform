@@ -173,11 +173,60 @@ public class Ride {
         this.sunroofAvailable = sunroofAvailable;
     }
 
+    private Boolean smokingAllowed;
+    private Boolean petsAllowed;
+    private Boolean instantBooking;
+    private Boolean maxTwoInBack;
+
+    public Boolean getSmokingAllowed() {
+        return smokingAllowed;
+    }
+
+    public void setSmokingAllowed(Boolean smokingAllowed) {
+        this.smokingAllowed = smokingAllowed;
+    }
+
+    public Boolean getPetsAllowed() {
+        return petsAllowed;
+    }
+
+    public void setPetsAllowed(Boolean petsAllowed) {
+        this.petsAllowed = petsAllowed;
+    }
+
+    public Boolean getInstantBooking() {
+        return instantBooking;
+    }
+
+    public void setInstantBooking(Boolean instantBooking) {
+        this.instantBooking = instantBooking;
+    }
+
+    public Boolean getMaxTwoInBack() {
+        return maxTwoInBack;
+    }
+
+    public void setMaxTwoInBack(Boolean maxTwoInBack) {
+        this.maxTwoInBack = maxTwoInBack;
+    }
+
     public java.util.List<String> getExtraImages() {
         return extraImages;
     }
 
     public void setExtraImages(java.util.List<String> extraImages) {
         this.extraImages = extraImages;
+    }
+
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "ride", "reviewee" })
+    private java.util.List<Review> reviews = new java.util.ArrayList<>();
+
+    public java.util.List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(java.util.List<Review> reviews) {
+        this.reviews = reviews;
     }
 }

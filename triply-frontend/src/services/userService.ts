@@ -26,9 +26,9 @@ export const userService = {
     uploadImage: async (file: File) => {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await api.post("http://localhost:8081/api/upload", formData, {
+        const response = await api.post("/upload", formData, {
             headers: {
-                "Content-Type": "multipart/form-data",
+                'Content-Type': 'multipart/form-data',
             },
         });
         return response.data.fileUrl;

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, Sun, Moon, User as UserIcon, Lock } from "lucide-react";
+import { Car, Menu, X, Sun, Moon, User as UserIcon, Lock, Bell } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -115,8 +115,8 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-[hsla(0,0%,100%,0.8)] dark:bg-[hsla(222,47%,11%,0.7)] backdrop-blur-xl border border-[hsla(222,47%,11%,0.1)] dark:border-[hsla(0,0%,100%,0.06)] rounded-xl fixed top-4 left-0 right-0 z-50 mx-auto max-w-6xl px-6 py-4 transition-colors duration-300">
-      <div className="flex items-center justify-between">
+    <nav className="bg-[hsl(0,0%,100%)] dark:bg-[hsl(222,47%,11%)] border-b border-[hsla(222,47%,11%,0.1)] dark:border-[hsla(0,0%,100%,0.06)] fixed top-0 left-0 right-0 z-50 w-full px-6 py-2 transition-colors duration-300 shadow-md">
+      <div className="mx-auto max-w-6xl flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <img src="/triplylogo-black.png" alt="TripLy Logo" className="h-10 w-10 object-contain block dark:hidden" />
@@ -128,6 +128,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-2 md:flex">
+<<<<<<< Updated upstream
           <Link to="/">
             <Button
               variant={isActive("/") ? "outline" : "ghost"}
@@ -155,6 +156,53 @@ const Navbar = () => {
               Offer Ride
             </Button>
           </Link>
+=======
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/">
+              <Button
+                variant={isActive("/") ? "outline" : "ghost"}
+                className={isActive("/") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                Home
+              </Button>
+            </Link>
+          )}
+
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/dashboard">
+              <Button
+                variant={isActive("/dashboard") ? "outline" : "ghost"}
+                className={isActive("/dashboard") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                Find Rides
+              </Button>
+            </Link>
+          )}
+          {(user?.role === 'PASSENGER' || user?.role === 'ROLE_PASSENGER') && (
+            <Link to="/my-bookings">
+              <Button
+                variant={isActive("/my-bookings") ? "outline" : "ghost"}
+                className={isActive("/my-bookings") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                Requested Rides
+              </Button>
+            </Link>
+          )}
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/post-ride">
+              <Button
+                variant={isActive("/post-ride") ? "outline" : "ghost"}
+                className={isActive("/post-ride") ? "border-black dark:border-white" : ""}
+                size="sm"
+              >
+                Offer Ride
+              </Button>
+            </Link>
+          )}
+>>>>>>> Stashed changes
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin">
               <Button
@@ -167,15 +215,26 @@ const Navbar = () => {
             </Link>
           )}
           {(user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
-            <Link to="/ride-history">
-              <Button
-                variant={isActive("/ride-history") ? "outline" : "ghost"}
-                className={isActive("/ride-history") ? "border-black dark:border-white" : ""}
-                size="sm"
-              >
-                Ride History
-              </Button>
-            </Link>
+            <>
+              <Link to="/ride-history">
+                <Button
+                  variant={isActive("/ride-history") ? "outline" : "ghost"}
+                  className={isActive("/ride-history") ? "border-black dark:border-white" : ""}
+                  size="sm"
+                >
+                  Ride History
+                </Button>
+              </Link>
+              <Link to="/requests">
+                <Button
+                  variant={isActive("/requests") ? "outline" : "ghost"}
+                  className={isActive("/requests") ? "border-black dark:border-white" : ""}
+                  size="sm"
+                >
+                  Requests
+                </Button>
+              </Link>
+            </>
           )}
         </div>
 
@@ -193,6 +252,16 @@ const Navbar = () => {
               <Moon className="h-4 w-4" />
             )}
             <span className="sr-only">Toggle theme</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full w-9 h-9"
+            onClick={() => alert("Notifications feature coming soon!")}
+          >
+            <Bell className="h-4 w-4" />
+            <span className="sr-only">Notifications</span>
           </Button>
 
           {user ? (
@@ -345,6 +414,7 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4 md:hidden">
+<<<<<<< Updated upstream
           <Link to="/" onClick={() => setMobileMenuOpen(false)}>
             <Button variant="ghost" className="w-full justify-start">
               Home
@@ -360,6 +430,36 @@ const Navbar = () => {
               Offer Ride
             </Button>
           </Link>
+=======
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Home
+              </Button>
+            </Link>
+          )}
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Find Rides
+              </Button>
+            </Link>
+          )}
+          {(user?.role === 'PASSENGER' || user?.role === 'ROLE_PASSENGER') && (
+            <Link to="/my-bookings" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Requested Rides
+              </Button>
+            </Link>
+          )}
+          {!user?.role?.includes('ADMIN') && (
+            <Link to="/post-ride" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Offer Ride
+              </Button>
+            </Link>
+          )}
+>>>>>>> Stashed changes
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Mail, Phone, Car, Plus, Save, Edit2, Trash2, XCircle } from "lucide-react";
+import { User, Mail, Phone, Car, Plus, Save, Edit2, Trash2, XCircle, Star } from "lucide-react";
 import { toast } from "sonner";
 import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
@@ -162,6 +162,14 @@ const Profile = () => {
                         <CardDescription>Manage your personal details</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="flex items-center gap-1 bg-yellow-400/10 text-yellow-600 px-3 py-1 rounded-full border border-yellow-400/20">
+                                <Star className="h-4 w-4 fill-yellow-400" />
+                                <span className="font-semibold">{user.averageRating ? user.averageRating.toFixed(1) : "New"}</span>
+                                <span className="text-xs text-muted-foreground ml-1">({user.reviewCount || 0} reviews)</span>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label>Full Name</Label>
                             <div className="relative">

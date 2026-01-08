@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Calendar, Users, IndianRupee, Car, ArrowRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { MapPin, Calendar, Users, IndianRupee, Car, ArrowRight, Zap, Armchair, PawPrint, Cigarette } from "lucide-react";
 import { toast } from "sonner";
 
 const PostRide = () => {
@@ -25,6 +26,10 @@ const PostRide = () => {
     availableSeats: "3",
     farePerSeat: "",
     vehicleId: "",
+    smokingAllowed: false,
+    petsAllowed: false,
+    instantBooking: false,
+    maxTwoInBack: false,
   });
   const [loading, setLoading] = useState(false);
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -251,6 +256,57 @@ const PostRide = () => {
                     value={form.farePerSeat}
                     onChange={(e) => update("farePerSeat", e.target.value)}
                     required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Ride Preferences */}
+            <div className="space-y-4 rounded-lg border p-4 bg-muted/20">
+              <h3 className="font-medium">Ride Preferences & Rules</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between space-x-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    <Label htmlFor="instantBooking" className="cursor-pointer">Instant Booking</Label>
+                  </div>
+                  <Switch
+                    id="instantBooking"
+                    checked={form.instantBooking}
+                    onCheckedChange={(checked) => setForm(prev => ({ ...prev, instantBooking: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                  <div className="flex items-center gap-2">
+                    <Armchair className="h-4 w-4 text-purple-500" />
+                    <Label htmlFor="maxTwoInBack" className="cursor-pointer">Max 2 in the back</Label>
+                  </div>
+                  <Switch
+                    id="maxTwoInBack"
+                    checked={form.maxTwoInBack}
+                    onCheckedChange={(checked) => setForm(prev => ({ ...prev, maxTwoInBack: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                  <div className="flex items-center gap-2">
+                    <PawPrint className="h-4 w-4 text-brown-500" />
+                    <Label htmlFor="petsAllowed" className="cursor-pointer">Pets Allowed</Label>
+                  </div>
+                  <Switch
+                    id="petsAllowed"
+                    checked={form.petsAllowed}
+                    onCheckedChange={(checked) => setForm(prev => ({ ...prev, petsAllowed: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                  <div className="flex items-center gap-2">
+                    <Cigarette className="h-4 w-4 text-gray-500" />
+                    <Label htmlFor="smokingAllowed" className="cursor-pointer">Smoking Allowed</Label>
+                  </div>
+                  <Switch
+                    id="smokingAllowed"
+                    checked={form.smokingAllowed}
+                    onCheckedChange={(checked) => setForm(prev => ({ ...prev, smokingAllowed: checked }))}
                   />
                 </div>
               </div>

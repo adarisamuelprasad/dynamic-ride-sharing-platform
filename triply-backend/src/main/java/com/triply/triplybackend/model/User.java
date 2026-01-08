@@ -29,6 +29,15 @@ public class User {
 
     private Boolean blocked = false;
     private Boolean driverVerified = false;
+    private Double walletBalance = 0.0;
+
+    public Double getWalletBalance() {
+        return walletBalance;
+    }
+
+    public void setWalletBalance(Double walletBalance) {
+        this.walletBalance = walletBalance;
+    }
 
     public User() {
     }
@@ -143,5 +152,21 @@ public class User {
 
     public void setVehicles(java.util.List<Vehicle> vehicles) {
         this.vehicles = vehicles;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
     }
 }

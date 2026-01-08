@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Car, Calendar, Shield, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Users, Car, Calendar, Shield, Trash2, CheckCircle, XCircle, Ban, Star, Wallet } from "lucide-react";
 import { authService } from "@/services/authService";
 import { adminService, User } from "@/services/adminService";
 import { Ride } from "@/services/rideService";
@@ -108,6 +108,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleBlockUser = async (user: User) => {
+        const action = user.blocked ? "unblock" : "block";
+        if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+        try {
+            await adminService.blockUser(user.id, !user.blocked);
+            toast.success(`User ${action}ed successfully`);
+            fetchData();
+        } catch (error) {
+            toast.error(`Failed to ${action} user`);
+        }
+    };
+
     const handleDeleteUser = async (userId: number) => {
         if (!confirm("Are you sure you want to delete this user?")) return;
         try {
@@ -119,7 +131,27 @@ const AdminDashboard = () => {
         }
     };
 
+    const [userFilter, setUserFilter] = useState('ALL');
+
+    const totalRevenue = bookings
+        .filter(b => b.status === 'CONFIRMED')
+        .reduce((acc, b) => {
+            const fare = (b.ride as any)?.farePerSeat || 0;
+            return acc + (b.seatsBooked * fare);
+        }, 0);
+
+    const filteredUsers = users.filter(user => {
+        if (userFilter === 'ALL') return true;
+        return user.role === userFilter;
+    });
+
     const stats = [
+        {
+            title: "Total Revenue",
+            value: `₹${totalRevenue.toLocaleString()}`,
+            icon: Wallet, // Make sure to import Wallet
+            color: "text-green-600"
+        },
         {
             title: "Total Users",
             value: users.length.toString(),
@@ -137,12 +169,6 @@ const AdminDashboard = () => {
             value: bookings.length.toString(),
             icon: Calendar,
             color: "text-accent"
-        },
-        {
-            title: "Verified Drivers",
-            value: users.filter(u => u.role === 'ROLE_DRIVER' && u.driverVerified).length.toString(),
-            icon: Shield,
-            color: "text-green-500"
         },
     ];
 
@@ -253,7 +279,19 @@ const AdminDashboard = () => {
                 <TabsContent value="users" className="space-y-4">
                     <Card glass>
                         <CardHeader>
-                            <CardTitle>All Users</CardTitle>
+                            <div className="flex justify-between items-center">
+                                <CardTitle>All Users</CardTitle>
+                                <select
+                                    className="h-9 w-[150px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    value={userFilter}
+                                    onChange={(e) => setUserFilter(e.target.value)}
+                                >
+                                    <option value="ALL">All Roles</option>
+                                    <option value="ROLE_PASSENGER">Passengers</option>
+                                    <option value="ROLE_DRIVER">Drivers</option>
+                                    <option value="ROLE_ADMIN">Admins</option>
+                                </select>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -268,7 +306,7 @@ const AdminDashboard = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {users.map((user) => (
+                                    {filteredUsers.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell>{user.id}</TableCell>
                                             <TableCell className="font-medium">{user.name}</TableCell>
@@ -294,6 +332,9 @@ const AdminDashboard = () => {
                                                     )}
                                                     <Button size="icon" variant="ghost" title="Edit User" onClick={() => setEditingUser(user)}>
                                                         <Users className="h-4 w-4 text-primary" /> {/* Reusing Users icon as edit icon to save import */}
+                                                    </Button>
+                                                    <Button size="icon" variant="ghost" title={user.blocked ? "Unblock User" : "Block User"} onClick={() => handleBlockUser(user)}>
+                                                        <Ban className={`h-4 w-4 ${user.blocked ? "text-green-500" : "text-orange-500"}`} />
                                                     </Button>
                                                     <Button size="icon" variant="ghost" title="Delete User" onClick={() => handleDeleteUser(user.id)}>
                                                         <Trash2 className="h-4 w-4 text-red-500" />
@@ -359,22 +400,40 @@ const AdminDashboard = () => {
                                         <TableHead>Ride</TableHead>
                                         <TableHead>Seats</TableHead>
                                         <TableHead>Status</TableHead>
+                                        <TableHead>Rating</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {bookings.map((booking) => (
-                                        <TableRow key={booking.id}>
-                                            <TableCell>{booking.id}</TableCell>
-                                            <TableCell>{booking.passenger?.name || 'Unknown'}</TableCell>
-                                            <TableCell>{booking.ride ? `${booking.ride.source} -> ${booking.ride.destination}` : 'Unknown'}</TableCell>
-                                            <TableCell>{booking.seatsBooked}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={booking.status === 'CONFIRMED' ? 'default' : 'secondary'}>
-                                                    {booking.status}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {bookings.map((booking) => {
+                                        // Find review for this booking (passenger + ride)
+                                        // Using simple property access assuming ride is populated with reviews
+                                        const rideReviews = (booking.ride as any)?.reviews || [];
+                                        const userReview = rideReviews.find((r: any) => r.reviewer?.id === booking.passenger?.id);
+
+                                        return (
+                                            <TableRow key={booking.id}>
+                                                <TableCell>{booking.id}</TableCell>
+                                                <TableCell>{booking.passenger?.name || 'Unknown'}</TableCell>
+                                                <TableCell>{booking.ride ? `${booking.ride.source} -> ${booking.ride.destination}` : 'Unknown'}</TableCell>
+                                                <TableCell>{booking.seatsBooked}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={booking.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                                                        {booking.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {userReview ? (
+                                                        <div className="flex items-center gap-1 text-yellow-600 font-medium">
+                                                            <span>{userReview.rating}</span>
+                                                            <Star className="h-3 w-3 fill-current" />
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-xs">-</span>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </CardContent>

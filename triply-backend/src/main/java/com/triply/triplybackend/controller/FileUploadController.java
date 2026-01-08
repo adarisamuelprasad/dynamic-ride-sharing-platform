@@ -15,7 +15,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
+<<<<<<< Updated upstream
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+=======
+// @CrossOrigin managed by SecurityConfig
+>>>>>>> Stashed changes
 public class FileUploadController {
 
     // Simple local storage for demonstration
@@ -33,8 +37,32 @@ public class FileUploadController {
     @PostMapping
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Please select a file to upload");
+            }
+
+            // Validate file size (10MB max)
+            if (file.getSize() > 10 * 1024 * 1024) {
+                return ResponseEntity.badRequest().body("File size exceeds maximum limit of 10MB");
+            }
+
+            // Validate file type (images only)
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body("Only image files are allowed");
+            }
+
             // Clean path
             String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+<<<<<<< Updated upstream
+=======
+
+            // Validate filename
+            if (originalFileName.contains("..")) {
+                return ResponseEntity.badRequest().body("Invalid file path");
+            }
+>>>>>>> Stashed changes
 
             // Generate unique name to prevent collisions
             String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
@@ -49,10 +77,16 @@ public class FileUploadController {
                     .path(fileName)
                     .toUriString();
 
+            System.out.println("File uploaded successfully: " + fileName + " -> " + fileDownloadUri);
+
             return ResponseEntity
                     .ok(new UploadResponse(fileName, fileDownloadUri, file.getContentType(), file.getSize()));
         } catch (IOException ex) {
+            ex.printStackTrace();
             return ResponseEntity.status(500).body("Could not upload file: " + ex.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body("Unexpected error: " + ex.getMessage());
         }
     }
 

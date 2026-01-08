@@ -5,7 +5,7 @@ interface BookingCardProps {
   booking: {
     id: number;
     seatsBooked: number;
-    status: "CONFIRMED" | "PENDING" | "CANCELLED";
+    status: "CONFIRMED" | "PENDING" | "CANCELLED" | "COMPLETED" | "APPROVED" | "REJECTED";
     ride: {
       source: string;
       destination: string;
@@ -14,9 +14,19 @@ interface BookingCardProps {
       name: string;
     };
   };
+<<<<<<< Updated upstream
 }
 
 const BookingCard = ({ booking }: BookingCardProps) => {
+=======
+  onCancel?: (id: number) => void;
+  onViewDetails?: (booking: any) => void;
+  onRate?: (booking: any) => void;
+  onPay?: (booking: any) => void;
+}
+
+const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: BookingCardProps) => {
+>>>>>>> Stashed changes
   const statusConfig = {
     CONFIRMED: {
       icon: CheckCircle,
@@ -28,7 +38,19 @@ const BookingCard = ({ booking }: BookingCardProps) => {
       icon: Clock,
       color: "text-yellow-500",
       bg: "bg-yellow-500/10",
-      label: "Pending",
+      label: "Pending Approval",
+    },
+    APPROVED: {
+      icon: CheckCircle,
+      color: "text-green-600",
+      bg: "bg-green-100",
+      label: "Approved - Pay Now",
+    },
+    REJECTED: {
+      icon: XCircle,
+      color: "text-red-500",
+      bg: "bg-red-100",
+      label: "Rejected",
     },
     CANCELLED: {
       icon: XCircle,
@@ -79,6 +101,56 @@ const BookingCard = ({ booking }: BookingCardProps) => {
             <span>• {booking.passenger.name}</span>
           )}
         </div>
+<<<<<<< Updated upstream
+=======
+
+
+        {/* Actions */}
+        <div className="mt-4 border-t pt-4 flex gap-2 flex-wrap">
+          {onViewDetails && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1 min-w-[100px]"
+              onClick={() => onViewDetails(booking)}
+            >
+              Details
+            </Button>
+          )}
+
+          {booking.status === 'APPROVED' && onPay && (
+            <Button
+              variant="gradient"
+              size="sm"
+              className="flex-1 min-w-[100px] animate-pulse"
+              onClick={() => onPay(booking)}
+            >
+              Pay Now
+            </Button>
+          )}
+
+          {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && booking.status !== "REJECTED" && onCancel && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-1 min-w-[100px]"
+              onClick={() => onCancel(booking.id)}
+            >
+              Cancel
+            </Button>
+          )}
+          {booking.status === "COMPLETED" && onRate && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+              onClick={() => onRate(booking)}
+            >
+              Rate Driver
+            </Button>
+          )}
+        </div>
+>>>>>>> Stashed changes
       </CardContent>
     </Card>
   );
