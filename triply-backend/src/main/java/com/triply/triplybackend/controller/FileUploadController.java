@@ -15,11 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
-<<<<<<< Updated upstream
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
-=======
 // @CrossOrigin managed by SecurityConfig
->>>>>>> Stashed changes
 public class FileUploadController {
 
     // Simple local storage for demonstration
@@ -55,14 +51,11 @@ public class FileUploadController {
 
             // Clean path
             String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-<<<<<<< Updated upstream
-=======
 
             // Validate filename
             if (originalFileName.contains("..")) {
                 return ResponseEntity.badRequest().body("Invalid file path");
             }
->>>>>>> Stashed changes
 
             // Generate unique name to prevent collisions
             String fileName = UUID.randomUUID().toString() + "_" + originalFileName;

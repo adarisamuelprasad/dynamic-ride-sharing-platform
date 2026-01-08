@@ -12,11 +12,14 @@ import PostRide from "./pages/PostRide";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import RideHistory from "./pages/RideHistory";
-<<<<<<< Updated upstream
-=======
+
+
 import MyBookings from "./pages/MyBookings";
 import DriverRequests from "./pages/DriverRequests";
->>>>>>> Stashed changes
+import Payment from "./pages/Payment";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentHistory from "./pages/PaymentHistory";
+
 import "./services/axiosConfig"; // Import axios configuration
 
 const queryClient = new QueryClient();
@@ -25,7 +28,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster position="top-right" />
-<<<<<<< Updated upstream
+
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <div className="min-h-screen">
           <Navbar />
@@ -38,39 +41,17 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/post-ride" element={<PostRide />} />
               <Route path="/ride-history" element={<RideHistory />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/requests" element={<DriverRequests />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/payments" element={<Payment />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/history" element={<PaymentHistory />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </div>
       </BrowserRouter>
-=======
-      <NotificationWrapper>
-        <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-          <div className="min-h-screen">
-            <Navbar />
-            <main className="pt-24">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/post-ride" element={<PostRide />} />
-                <Route path="/ride-history" element={<RideHistory />} />
-                <Route path="/my-bookings" element={<MyBookings />} />
-                <Route path="/requests" element={<DriverRequests />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/payments" element={<Payment />} />
-                <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/history" element={<PaymentHistory />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-          </div>
-        </BrowserRouter>
-      </NotificationWrapper>
->>>>>>> Stashed changes
     </TooltipProvider>
   </QueryClientProvider>
 );

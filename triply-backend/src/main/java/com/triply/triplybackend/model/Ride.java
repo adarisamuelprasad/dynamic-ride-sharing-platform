@@ -30,6 +30,7 @@ public class Ride {
     private Double sourceLng;
     private Double destLat;
     private Double destLng;
+    private Double distanceKm;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
@@ -116,6 +117,14 @@ public class Ride {
 
     public void setDestLng(Double destLng) {
         this.destLng = destLng;
+    }
+
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     public User getDriver() {

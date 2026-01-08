@@ -26,7 +26,9 @@ if (Test-Path $m2Path) {
                 "-classpath",
                 "`"$($plexusJar.FullName)`"",
                 "org.codehaus.plexus.classworlds.launcher.Launcher",
-                "spring-boot:run"
+                "clean",
+                "package",
+                "-DskipTests"
              )
              
              Write-Host "Launching Maven via Java..."

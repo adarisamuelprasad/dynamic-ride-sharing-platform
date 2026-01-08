@@ -128,35 +128,6 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-2 md:flex">
-<<<<<<< Updated upstream
-          <Link to="/">
-            <Button
-              variant={isActive("/") ? "outline" : "ghost"}
-              className={isActive("/") ? "border-black dark:border-white" : ""}
-              size="sm"
-            >
-              Home
-            </Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button
-              variant={isActive("/dashboard") ? "outline" : "ghost"}
-              className={isActive("/dashboard") ? "border-black dark:border-white" : ""}
-              size="sm"
-            >
-              Find Rides
-            </Button>
-          </Link>
-          <Link to="/post-ride">
-            <Button
-              variant={isActive("/post-ride") ? "outline" : "ghost"}
-              className={isActive("/post-ride") ? "border-black dark:border-white" : ""}
-              size="sm"
-            >
-              Offer Ride
-            </Button>
-          </Link>
-=======
           {!user?.role?.includes('ADMIN') && (
             <Link to="/">
               <Button
@@ -202,7 +173,6 @@ const Navbar = () => {
               </Button>
             </Link>
           )}
->>>>>>> Stashed changes
           {user?.role === 'ROLE_ADMIN' && (
             <Link to="/admin">
               <Button
@@ -414,23 +384,6 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4 md:hidden">
-<<<<<<< Updated upstream
-          <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start">
-              Home
-            </Button>
-          </Link>
-          <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start">
-              Find Rides
-            </Button>
-          </Link>
-          <Link to="/post-ride" onClick={() => setMobileMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start">
-              Offer Ride
-            </Button>
-          </Link>
-=======
           {!user?.role?.includes('ADMIN') && (
             <Link to="/" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">
@@ -459,23 +412,27 @@ const Navbar = () => {
               </Button>
             </Link>
           )}
->>>>>>> Stashed changes
-          {user?.role === 'ROLE_ADMIN' && (
-            <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">
-                Admin Dashboard
-              </Button>
-            </Link>
-          )}
+          {
+            user?.role === 'ROLE_ADMIN' && (
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  Admin Dashboard
+                </Button>
+              </Link>
+            )
+          }
 
 
-          {(user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
-            <Link to="/ride-history" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">
-                Ride History
-              </Button>
-            </Link>
-          )}
+          {
+            (user?.role === 'ROLE_DRIVER' || user?.role === 'DRIVER') && (
+              <Link to="/ride-history" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  Ride History
+                </Button>
+              </Link>
+            )
+          }
+
 
           <div className="mt-2 flex gap-2 flex-col">
             {user ? (

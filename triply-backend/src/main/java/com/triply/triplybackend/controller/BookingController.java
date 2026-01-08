@@ -7,6 +7,12 @@ import com.triply.triplybackend.repository.BookingRepository;
 import com.triply.triplybackend.repository.RideRepository;
 import com.triply.triplybackend.repository.UserRepository;
 import com.triply.triplybackend.repository.PaymentRepository;
+import com.triply.triplybackend.service.GoogleMapsService;
+import com.triply.triplybackend.service.NotificationService;
+import com.triply.triplybackend.service.StripeService;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,6 +34,18 @@ public class BookingController {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private GoogleMapsService googleMapsService;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private StripeService stripeService;
+
+    private final double baseFare = 50.0;
+    private final double ratePerKm = 12.0;
+
     @PostMapping("/book")
     public ResponseEntity<?> bookRide(@RequestBody Booking bookingRequest, Authentication auth) {
         if (auth == null || auth.getPrincipal() == null) {
@@ -47,8 +65,6 @@ public class BookingController {
         }
         var ride = rideOpt.get();
 
-<<<<<<< Updated upstream
-=======
         // Check if passenger already booked this ride
         List<Booking> existingBookings = bookingRepository.findByPassengerIdAndRide_Id(passengerId, ride.getId());
         boolean hasActiveBooking = existingBookings.stream()
@@ -58,7 +74,6 @@ public class BookingController {
             return ResponseEntity.badRequest().body("You have already booked or requested this ride");
         }
 
->>>>>>> Stashed changes
         if (ride.getAvailableSeats() < bookingRequest.getSeatsBooked()) {
             return ResponseEntity.badRequest().body("Not enough seats available");
         }
@@ -72,18 +87,6 @@ public class BookingController {
         booking.setRide(ride);
         booking.setPassenger(passengerOpt.get());
         booking.setSeatsBooked(bookingRequest.getSeatsBooked());
-<<<<<<< Updated upstream
-        booking.setStatus("CONFIRMED");
-
-        bookingRepository.save(booking);
-
-        // simulate payment capture
-        Payment payment = new Payment();
-        payment.setBooking(booking);
-        payment.setAmount(booking.getSeatsBooked() * ride.getFarePerSeat());
-        payment.setStatus("PAID");
-        paymentRepository.save(payment);
-=======
         booking.setStatus("PENDING"); // Initial status is PENDING (waiting for driver approval)
 
         // Calculate fare
@@ -220,7 +223,6 @@ public class BookingController {
             return ResponseEntity.ok(booking);
         }
     }
->>>>>>> Stashed changes
 
     @GetMapping("/driver-requests")
     public ResponseEntity<?> getDriverRequests(Authentication auth) {

@@ -31,6 +31,9 @@ public class User {
     private Boolean driverVerified = false;
     private Double walletBalance = 0.0;
 
+    private Double averageRating = 0.0;
+    private Integer reviewCount = 0;
+
     public Double getWalletBalance() {
         return walletBalance;
     }
