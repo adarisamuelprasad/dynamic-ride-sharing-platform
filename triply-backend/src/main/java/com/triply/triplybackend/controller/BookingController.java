@@ -3,6 +3,7 @@ package com.triply.triplybackend.controller;
 import com.triply.triplybackend.model.Booking;
 import com.triply.triplybackend.model.User;
 import com.triply.triplybackend.model.Payment;
+import com.triply.triplybackend.model.Ride;
 import com.triply.triplybackend.repository.BookingRepository;
 import com.triply.triplybackend.repository.RideRepository;
 import com.triply.triplybackend.repository.UserRepository;

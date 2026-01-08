@@ -37,11 +37,8 @@ export interface Ride {
     instantBooking?: boolean;
     maxTwoInBack?: boolean;
     extraImages?: string[];
-<<<<<<< Updated upstream
-=======
     status?: string;
     reviews?: Review[];
->>>>>>> Stashed changes
 }
 
 export interface RideRequest {

@@ -16,6 +16,12 @@ export interface Booking {
     ride: Ride;
 }
 
+export interface BookingResponse {
+    status?: string;
+    message?: string;
+    [key: string]: any;
+}
+
 export const bookingService = {
     async bookRide(rideId: number, seatsBooked: number): Promise<Booking> {
         const response = await axios.post<Booking>(`${API_BASE}/book`, {
@@ -28,8 +34,7 @@ export const bookingService = {
     async getMyBookings(): Promise<Booking[]> {
         const response = await axios.get<Booking[]>(`${API_BASE}/my`);
         return response.data;
-<<<<<<< Updated upstream
-=======
+
     },
 
     async downloadReport(): Promise<void> {
@@ -76,6 +81,6 @@ export const bookingService = {
     async cancelBooking(bookingId: number): Promise<Booking> {
         const response = await axios.post<Booking>(`${API_BASE}/cancel/${bookingId}`);
         return response.data;
->>>>>>> Stashed changes
+
     }
 };

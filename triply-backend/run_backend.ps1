@@ -1,44 +1,43 @@
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "Stop"
+$mvnHome = "C:\Users\samue\.m2\wrapper\dists\apache-maven-3.9.11-bin\6mqf5t809d9geo83kj4ttckcbc\apache-maven-3.9.11"
+$bootDir = "$mvnHome\boot"
 
-Write-Host "Searching for Maven wrapper in user home..."
+Write-Host "Checking for plexus jar in $bootDir..."
+$plexusJar = Get-ChildItem -Path $bootDir -Filter "plexus-classworlds-*.jar" | Select-Object -First 1
 
-$m2Path = "$env:USERPROFILE\.m2\wrapper\dists"
-if (Test-Path $m2Path) {
-    # Recursively find mvn.cmd to locate the home
-    $mvnExecutable = Get-ChildItem -Path $m2Path -Filter "mvn.cmd" -Recurse | Select-Object -First 1
-    
-    if ($mvnExecutable) {
-        $mvnHome = $mvnExecutable.Directory.Parent.FullName
-        Write-Host "Found Maven Home: $mvnHome"
-        
-        $bootDir = Join-Path $mvnHome "boot"
-        $plexusJar = Get-ChildItem -Path $bootDir -Filter "plexus-classworlds-*.jar" | Select-Object -First 1
-        
-        if ($plexusJar) {
-             Write-Host "Found Plexus Jar: $($plexusJar.Name)"
-             
-             # Construct args
-             $javaArgs = @(
-                "-Dclassworlds.conf=$mvnHome\bin\m2.conf",
-                "-Dmaven.home=$mvnHome",
-                "-Dlibrary.jansi.path=$mvnHome\lib\jansi-native",
-                "-Dmaven.multiModuleProjectDirectory=$PWD",
-                "-classpath",
-                "`"$($plexusJar.FullName)`"",
-                "org.codehaus.plexus.classworlds.launcher.Launcher",
-                "clean",
-                "package",
-                "-DskipTests"
-             )
-             
-             Write-Host "Launching Maven via Java..."
-             & java $javaArgs
-        } else {
-             Write-Error "Could not find plexus-classworlds jar in $bootDir"
-        }
-    } else {
-        Write-Error "Could not find mvn.cmd in $m2Path"
-    }
-} else {
-    Write-Error ".m2 directory not found at $m2Path"
+if (!$plexusJar) {
+    Write-Error "Plexus jar not found in $bootDir"
+    exit 1
 }
+
+Write-Host "Found Jar: $($plexusJar.FullName)"
+
+# Use JAVA_HOME java if available
+$javaCmd = "java"
+if ($env:JAVA_HOME) {
+    $javaCmd = "$env:JAVA_HOME\bin\java.exe"
+}
+
+Write-Host "Verifying Java: $javaCmd"
+try {
+    & "$javaCmd" -version 2>&1 | Write-Host
+} catch {
+    Write-Warning "Could not run java -version"
+}
+
+# Java Arguments
+$javaArgs = @(
+    "-Dclassworlds.conf=$mvnHome\bin\m2.conf",
+    "-Dmaven.home=$mvnHome",
+    "-Dmaven.multiModuleProjectDirectory=$PWD",
+    "-classpath",
+    $plexusJar.FullName,
+    "org.codehaus.plexus.classworlds.launcher.Launcher",
+    "clean",
+    "package",
+    "-DskipTests"
+)
+
+Write-Host "Executing Maven build..."
+# Use Call Operator & for direct execution which handles spaces if quoted string provided
+& "$javaCmd" $javaArgs

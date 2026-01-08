@@ -68,11 +68,11 @@ public class PaymentService {
     }
 
     public List<Payment> getPassengerHistory(Long userId) {
-        return paymentRepository.findByPassengerId(userId);
+        return paymentRepository.findByBooking_Passenger_Id(userId);
     }
 
     public List<Payment> getDriverHistory(Long driverId) {
-        return paymentRepository.findByDriverId(driverId);
+        return paymentRepository.findByBooking_Ride_Driver_Id(driverId);
     }
 
     public com.triply.triplybackend.payload.PaymentReportResponse getPaymentReport(Long userId, String role) {
@@ -85,7 +85,7 @@ public class PaymentService {
             double revenue = allPayments.stream().mapToDouble(Payment::getAmount).sum();
             report.setTotalRevenue(revenue);
         } else if ("ROLE_DRIVER".equals(role)) {
-            List<Payment> driverPayments = paymentRepository.findByDriverId(userId);
+            List<Payment> driverPayments = paymentRepository.findByBooking_Ride_Driver_Id(userId);
             report.setEarningsHistory(driverPayments); // Drivers see earnings
             report.setTransactions(driverPayments);
             double earnings = driverPayments.stream().mapToDouble(Payment::getAmount).sum();
@@ -97,7 +97,7 @@ public class PaymentService {
             }
         } else {
             // Passenger
-            List<Payment> passengerPayments = paymentRepository.findByPassengerId(userId);
+            List<Payment> passengerPayments = paymentRepository.findByBooking_Passenger_Id(userId);
             report.setTransactions(passengerPayments);
             double spent = passengerPayments.stream().mapToDouble(Payment::getAmount).sum();
             report.setTotalSpent(spent);

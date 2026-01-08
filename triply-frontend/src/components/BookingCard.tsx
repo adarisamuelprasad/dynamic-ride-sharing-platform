@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Users, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BookingCardProps {
   booking: {
@@ -14,11 +15,6 @@ interface BookingCardProps {
       name: string;
     };
   };
-<<<<<<< Updated upstream
-}
-
-const BookingCard = ({ booking }: BookingCardProps) => {
-=======
   onCancel?: (id: number) => void;
   onViewDetails?: (booking: any) => void;
   onRate?: (booking: any) => void;
@@ -26,7 +22,6 @@ const BookingCard = ({ booking }: BookingCardProps) => {
 }
 
 const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: BookingCardProps) => {
->>>>>>> Stashed changes
   const statusConfig = {
     CONFIRMED: {
       icon: CheckCircle,
@@ -58,9 +53,15 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: Bookin
       bg: "bg-destructive/10",
       label: "Cancelled",
     },
+    COMPLETED: {
+      icon: CheckCircle,
+      color: "text-blue-500",
+      bg: "bg-blue-100",
+      label: "Completed",
+    },
   };
 
-  const status = statusConfig[booking.status];
+  const status = statusConfig[booking.status] || statusConfig.PENDING;
   const StatusIcon = status.icon;
 
   return (
@@ -101,9 +102,6 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: Bookin
             <span>• {booking.passenger.name}</span>
           )}
         </div>
-<<<<<<< Updated upstream
-=======
-
 
         {/* Actions */}
         <div className="mt-4 border-t pt-4 flex gap-2 flex-wrap">
@@ -120,9 +118,9 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: Bookin
 
           {booking.status === 'APPROVED' && onPay && (
             <Button
-              variant="gradient"
+              variant="default"
               size="sm"
-              className="flex-1 min-w-[100px] animate-pulse"
+              className="flex-1 min-w-[100px] animate-pulse bg-green-600 hover:bg-green-700 text-white"
               onClick={() => onPay(booking)}
             >
               Pay Now
@@ -150,7 +148,6 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }: Bookin
             </Button>
           )}
         </div>
->>>>>>> Stashed changes
       </CardContent>
     </Card>
   );

@@ -9,3 +9,9 @@ node_modules/
 
 # OS
 .DS_Store
+
+# Ignore large files and artifacts
+TripLy - Milestone-1&2.mp4
+uploads/
+.mvn/wrapper/maven-wrapper.properties
+

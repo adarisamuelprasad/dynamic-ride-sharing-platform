@@ -38,12 +38,6 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       // Redirect to login with ride ID
       navigate(`/login?redirect=/book&rideId=${ride.id}`);
     } else {
-<<<<<<< Updated upstream
-      // User is logged in, proceed with booking
-      if (onBook) {
-        onBook(ride);
-        setIsDetailsOpen(false);
-=======
       const user = authService.currentUser;
       if (user?.role === 'DRIVER' || user?.role === 'ROLE_DRIVER' || user?.role === 'ROLE_ADMIN') {
         toast.error("Drivers and Admins cannot book rides.");
@@ -61,7 +55,6 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
           const msg = typeof error.response?.data === 'string' ? error.response.data : "Failed to request ride";
           toast.error(msg);
         }
->>>>>>> Stashed changes
       }
     }
   };
@@ -263,20 +256,6 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
       </div>
 
       <CardContent className="p-5 flex-1 flex flex-col">
-<<<<<<< Updated upstream
-        {/* Route */}
-        <div className="mb-4">
-          <div className="flex items-start gap-3">
-            <div className="flex flex-col items-center mt-1">
-              <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-              <div className="h-6 w-0.5 bg-gradient-to-b from-primary to-secondary" />
-              <div className="h-2.5 w-2.5 rounded-full bg-secondary" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <div>
-                <p className="text-xs text-muted-foreground">From</p>
-                <p className="font-semibold text-foreground text-sm line-clamp-1" title={ride.source}>{ride.source}</p>
-=======
         {/* Route Timeline */}
         <div className="mb-6 relative">
           <div className="flex items-center justify-between font-bold text-lg mb-1">
@@ -284,7 +263,6 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
             {ride.distanceKm && (
               <div className="flex flex-col items-center">
                 <span className="text-[10px] text-muted-foreground font-normal">{(ride.distanceKm / 1000).toFixed(1)}h</span> {/* Assuming 1000 is error, wait. distance is km. 60km/h */}
->>>>>>> Stashed changes
               </div>
             )}
             <span className="text-muted-foreground">
@@ -588,11 +566,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
                     ) : (
                       onBook && authService.currentUser?.role !== 'ROLE_ADMIN' && ride.status !== 'COMPLETED' && ride.status !== 'CANCELLED' && (
                         <Button className="w-full" onClick={handleBookClick} variant="gradient">
-<<<<<<< Updated upstream
-                          Book This Ride
-=======
                           Request Ride
->>>>>>> Stashed changes
                         </Button>
                       )
                     )}
@@ -618,11 +592,7 @@ const RideCard = ({ ride, onBook }: RideCardProps) => {
               className="flex-1"
               onClick={handleBookClick}
             >
-<<<<<<< Updated upstream
-              Book
-=======
               Request Ride
->>>>>>> Stashed changes
             </Button>
           )}
         </div>

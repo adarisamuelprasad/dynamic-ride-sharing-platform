@@ -1,0 +1,34 @@
+
+> vite_react_shadcn_ts@0.0.0 build
+> vite build
+
+[36mvite v5.4.19 [32mbuilding for production...[36m[39m
+transforming...
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[32m✓[39m 51 modules transformed.
+[31mx[39m Build failed in 2.50s
+[31merror during build:
+[31m[vite:esbuild] Transform failed with 1 error:
+C:/Users/samue/One Drive official/OneDrive/Desktop/Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025/triply-frontend/src/services/rideService.ts:40:0: ERROR: Unexpected "<<"[31m
+file: [36mC:/Users/samue/One Drive official/OneDrive/Desktop/Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025/triply-frontend/src/services/rideService.ts:40:0[31m
+[33m
+[33mUnexpected "<<"[33m
+38 |      maxTwoInBack?: boolean;
+39 |      extraImages?: string[];
+40 |  <<<<<<< Updated upstream
+   |  ^
+41 |  =======
+42 |      status?: string;
+[31m
+    at failureErrorWithLog (C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-frontend\node_modules\esbuild\lib\main.js:1472:15)
+    at C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-frontend\node_modules\esbuild\lib\main.js:755:50
+    at responseCallbacks.<computed> (C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-frontend\node_modules\esbuild\lib\main.js:622:9)
+    at handleIncomingPacket (C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-frontend\node_modules\esbuild\lib\main.js:677:12)
+    at Socket.readFromStdout (C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-frontend\node_modules\esbuild\lib\main.js:600:7)
+    at Socket.emit (node:events:524:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)[39m
