@@ -35,6 +35,8 @@ public class Booking {
     private Double dropoffLng;
     private Double distanceKm;
 
+    private String paymentStatus;
+
     // Getters and Setters
 
     public Long getId() {
@@ -139,5 +141,13 @@ public class Booking {
 
     public void setDistanceKm(Double distanceKm) {
         this.distanceKm = distanceKm;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

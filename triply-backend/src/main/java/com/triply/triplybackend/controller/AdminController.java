@@ -4,10 +4,14 @@ import com.triply.triplybackend.model.User;
 import com.triply.triplybackend.model.Ride;
 import com.triply.triplybackend.model.Booking;
 import com.triply.triplybackend.model.ERole;
+import com.triply.triplybackend.model.Review;
 import com.triply.triplybackend.payload.requests.AdminUpdateUserRequest;
 import com.triply.triplybackend.repository.UserRepository;
 import com.triply.triplybackend.repository.RideRepository;
 import com.triply.triplybackend.repository.BookingRepository;
+import com.triply.triplybackend.repository.ReviewRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,22 +33,32 @@ public class AdminController {
     @Autowired
     private BookingRepository bookings;
 
+    @Autowired
+    private ReviewRepository reviews;
+
     @GetMapping("/users")
-    public List<User> allUsers() {
-        return users.findAll();
+    public Page<User> allUsers(Pageable pageable) {
+        return users.findAll(pageable);
     }
 
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody AdminUpdateUserRequest body) {
         return users.findById(id)
                 .map(u -> {
-                    if (body.getName() != null) u.setName(body.getName());
-                    if (body.getPhone() != null) u.setPhone(body.getPhone());
-                    if (body.getBlocked() != null) u.setBlocked(body.getBlocked());
-                    if (body.getDriverVerified() != null) u.setDriverVerified(body.getDriverVerified());
-                    if (body.getVehicleModel() != null) u.setVehicleModel(body.getVehicleModel());
-                    if (body.getLicensePlate() != null) u.setLicensePlate(body.getLicensePlate());
-                    if (body.getCapacity() != null) u.setCapacity(body.getCapacity());
+                    if (body.getName() != null)
+                        u.setName(body.getName());
+                    if (body.getPhone() != null)
+                        u.setPhone(body.getPhone());
+                    if (body.getBlocked() != null)
+                        u.setBlocked(body.getBlocked());
+                    if (body.getDriverVerified() != null)
+                        u.setDriverVerified(body.getDriverVerified());
+                    if (body.getVehicleModel() != null)
+                        u.setVehicleModel(body.getVehicleModel());
+                    if (body.getLicensePlate() != null)
+                        u.setLicensePlate(body.getLicensePlate());
+                    if (body.getCapacity() != null)
+                        u.setCapacity(body.getCapacity());
                     if (body.getRole() != null) {
                         try {
                             u.setRole(ERole.valueOf(body.getRole()));
@@ -89,13 +103,19 @@ public class AdminController {
     }
 
     @GetMapping("/rides")
-    public List<Ride> allRides() {
-        return rides.findAll();
+    public Page<Ride> allRides(Pageable pageable) {
+        return rides.findAll(pageable);
     }
 
     @GetMapping("/bookings")
-    public List<Booking> allBookings() {
-        return bookings.findAll();
+    public Page<Booking> allBookings(Pageable pageable) {
+        return bookings.findAll(pageable);
+    }
+
+    @GetMapping("/rude-activity")
+    public Page<Review> rudeActivity(Pageable pageable) {
+        // Fetch reviews with rating < 3 as "rude" behavior indicator
+        return reviews.findByRatingLessThan(3, pageable);
     }
 
     @GetMapping("/payments")
@@ -104,4 +124,3 @@ public class AdminController {
         return Collections.emptyList();
     }
 }
-

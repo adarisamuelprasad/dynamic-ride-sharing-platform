@@ -12,4 +12,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     // Helper to check if a user has already reviewed a ride target?
     // Usually valid to check if reviewer + ride + reviewee combo exists
     boolean existsByReviewerIdAndRideIdAndRevieweeId(Long reviewerId, Long rideId, Long revieweeId);
+
+    org.springframework.data.domain.Page<Review> findByRatingLessThan(Integer rating,
+            org.springframework.data.domain.Pageable pageable);
 }

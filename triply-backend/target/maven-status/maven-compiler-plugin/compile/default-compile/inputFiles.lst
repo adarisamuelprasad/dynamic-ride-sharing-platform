@@ -36,6 +36,7 @@ C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\security\JwtFilter.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\security\JwtUtil.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\security\SecurityConfig.java
+C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\EmailService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\GoogleMapsService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\NotificationService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\PaymentService.java
@@ -43,5 +44,6 @@ C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\ReviewService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\RideService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\StripeService.java
+C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\TicketService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\service\UserService.java
 C:\Users\samue\One Drive official\OneDrive\Desktop\Development-of-a-Dynamic-Ride-Sharing-and-Carpooling-Platform_Nov_Batch-6_2025\triply-backend\src\main\java\com\triply\triplybackend\TriplyBackendApplication.java

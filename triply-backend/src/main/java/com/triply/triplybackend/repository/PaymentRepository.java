@@ -10,4 +10,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     // Find payments where the associated booking's ride's driver has the given ID
     java.util.List<Payment> findByBooking_Ride_Driver_Id(Long driverId);
+
+    java.util.Optional<Payment> findByBooking(com.triply.triplybackend.model.Booking booking);
 }

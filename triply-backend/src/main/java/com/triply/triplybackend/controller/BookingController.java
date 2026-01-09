@@ -44,6 +44,12 @@ public class BookingController {
     @Autowired
     private StripeService stripeService;
 
+    @Autowired
+    private com.triply.triplybackend.service.EmailService emailService;
+
+    @Autowired
+    private com.triply.triplybackend.service.TicketService ticketService;
+
     private final double baseFare = 50.0;
     private final double ratePerKm = 12.0;
 
@@ -221,7 +227,50 @@ public class BookingController {
 
             booking.setStatus("CONFIRMED"); // Auto confirm if cash
             bookingRepository.save(booking);
+
+            sendBookingConfirmationEmail(booking);
+
             return ResponseEntity.ok(booking);
+        }
+    }
+
+    @PostMapping("/{id}/confirm-payment")
+    public ResponseEntity<?> confirmPayment(@PathVariable Long id, @RequestParam String paymentIntentId) {
+        Booking booking = bookingRepository.findById(id).orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Update payment status
+        Payment payment = paymentRepository.findByBooking(booking).orElse(new Payment());
+        payment.setBooking(booking);
+        payment.setTransactionId(paymentIntentId);
+        payment.setStatus("PAID");
+        payment.setType("BOOKING_PAYMENT"); // likely already set but ensure
+        paymentRepository.save(payment);
+
+        booking.setStatus("CONFIRMED");
+        booking.setPaymentStatus("PAID");
+        bookingRepository.save(booking);
+
+        sendBookingConfirmationEmail(booking);
+
+        return ResponseEntity.ok(booking);
+    }
+
+    private void sendBookingConfirmationEmail(Booking booking) {
+        try {
+            byte[] pdf = ticketService.generateTicketPdf(booking);
+            String subject = "TripLy Ticket - Ride Confirmed #" + booking.getId();
+            String body = "<h3>Your ride is confirmed!</h3>" +
+                    "<p>Thank you for booking with TripLy. Please find your ticket attached.</p>" +
+                    "<p><b>Ride Details:</b></p>" +
+                    "<ul>" +
+                    "<li>From: " + booking.getRide().getSource() + "</li>" +
+                    "<li>To: " + booking.getRide().getDestination() + "</li>" +
+                    "<li>Driver: " + booking.getRide().getDriver().getName() + "</li>" +
+                    "</ul>";
+
+            emailService.sendTicketEmail(booking.getPassenger().getEmail(), subject, body, pdf);
+        } catch (Exception e) {
+            System.err.println("Failed to send ticket email: " + e.getMessage());
         }
     }
 
