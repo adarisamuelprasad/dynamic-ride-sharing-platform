@@ -3,10 +3,11 @@ import axios from './axiosConfig.js';
 const API_BASE = 'http://localhost:8081/api/bookings';
 
 export const bookingService = {
-    async bookRide(rideId, seatsBooked) {
+    async bookRide(rideId, seatsBooked, paymentMethod = "CASH") {
         const response = await axios.post(`${API_BASE}/book`, {
             rideId,
-            seatsBooked
+            seatsBooked,
+            paymentMethod
         });
         return response.data;
     },

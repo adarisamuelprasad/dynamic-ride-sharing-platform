@@ -3,6 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Shield, Wallet, MapPin, ArrowRight, Sparkles, Calendar, Activity, PawPrint, Cigarette, Zap, Armchair } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { useEffect, useState } from "react";
 import axios from "@/services/axiosConfig";
@@ -29,6 +39,7 @@ const Home = () => {
   const [filterInstant, setFilterInstant] = useState(false);
   const [filterMax2, setFilterMax2] = useState(false);
   const [sortOption, setSortOption] = useState("earliest");
+  /* Removed duplicate sortOption state */
   const [user, setUser] = useState(authService.currentUser);
   const navigate = useNavigate();
 
@@ -42,16 +53,21 @@ const Home = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      // Load stats independently
       try {
-        // Load stats
         const statsRes = await axios.get('http://localhost:8081/api/stats');
         setStats({
           activeRiders: statsRes.data.activeRiders || 0,
           ridesShared: statsRes.data.ridesShared || 0,
           cities: statsRes.data.cities || 0
         });
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+        // Keep default stats
+      }
 
-        // Load all rides
+      // Load rides independently
+      try {
         const ridesRes = await rideService.getAllRides();
 
         // Filter: Future dates only and available seats
@@ -64,7 +80,7 @@ const Home = () => {
         setAllRides(sorted);
         setFilteredRides(sorted);
       } catch (error) {
-        console.error("Failed to fetch data", error);
+        console.error("Failed to fetch rides", error);
       }
     };
     loadData();
@@ -110,33 +126,7 @@ const Home = () => {
     }
   }, [user, navigate]);
 
-  const handleBookRide = async (ride) => {
-    if (!authService.isLoggedIn()) {
-      navigate(`/login?redirect=/book&rideId=${ride.id}`);
-      return;
-    }
 
-    const currentUser = authService.currentUser;
-    if (currentUser?.role === 'ROLE_DRIVER' || currentUser?.role === 'DRIVER') {
-      toast.error("Drivers cannot book rides. Please log in as Passenger to book.");
-      return;
-    }
-
-    if (confirm(`Book a seat on this ride for ₹${ride.farePerSeat}?`)) {
-      try {
-        await bookingService.bookRide(ride.id, 1);
-        toast.success("Ride booked successfully!");
-        // Refresh data
-        const ridesRes = await rideService.getAllRides();
-        const now = new Date();
-        const available = ridesRes.filter(r => new Date(r.departureTime) >= now && r.availableSeats > 0);
-        const sorted = available.sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
-        setAllRides(sorted);
-      } catch (error) {
-        toast.error(typeof error.response?.data === 'string' ? error.response.data : 'Failed to book ride');
-      }
-    }
-  };
 
   const features = [
     {
@@ -164,7 +154,7 @@ const Home = () => {
   // --- LOGGED IN USER VIEW (Passenger / Driver) ---
   if (user) {
     return (
-      <div className="min-h-screen pt-0 px-12 pb-20">
+      <div className="min-h-screen pt-24 px-12 pb-20">
         <div className="mx-auto max-w-7xl animate-fade-in">
           {/* Welcome Header */}
           <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
@@ -215,7 +205,7 @@ const Home = () => {
 
                 <div className="space-y-4">
                   {allRides.slice(0, 4).map((r, i) => (
-                    <div key={i} className="flex gap-3 items-start group cursor-pointer" onClick={() => handleBookRide(r)}>
+                    <div key={i} className="flex gap-3 items-start group cursor-pointer" onClick={() => navigate('/dashboard')}>
                       <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-primary/20 transition-transform" />
                       <div>
                         <p className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
@@ -333,7 +323,7 @@ const Home = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredRides.map(ride => (
-                        <RideCard key={ride.id} ride={ride} onBook={handleBookRide} />
+                        <RideCard key={ride.id} ride={ride} />
                       ))}
                     </div>
                   )}
@@ -350,7 +340,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-4 pb-20 pt-12">
+      <section className="relative overflow-hidden px-4 pb-20 pt-24">
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="space-y-6">
@@ -373,7 +363,7 @@ const Home = () => {
                   </Button>
                 </Link>
                 <Link to="/post-ride">
-                  <Button variant="glass" size="xl">
+                  <Button variant="gradient" size="xl">
                     Offer a Ride
                   </Button>
                 </Link>
@@ -416,7 +406,7 @@ const Home = () => {
                     </div>
                   ) : (
                     filteredRides.map(ride => (
-                      <RideCard key={ride.id} ride={ride} onBook={handleBookRide} />
+                      <RideCard key={ride.id} ride={ride} />
                     ))
                   )}
                 </div>
@@ -478,7 +468,7 @@ const Home = () => {
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button variant="glass" size="lg">
+                  <Button variant="gradient" size="lg">
                     Sign In
                   </Button>
                 </Link>
@@ -496,6 +486,8 @@ const Home = () => {
           </p>
         </div>
       </footer>
+
+
     </div>
   );
 };

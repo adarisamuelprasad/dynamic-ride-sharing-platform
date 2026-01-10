@@ -11,6 +11,16 @@ import { bookingService } from "@/services/bookingService";
 import { authService } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import RideCard from "@/components/RideCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Dashboard = () => {
   const [search, setSearch] = useState({ source: "", destination: "", date: "" });
@@ -89,33 +99,10 @@ const Dashboard = () => {
     }
   };
 
-  const handleBook = async (rideId) => {
-    if (!isLoggedIn) {
-      toast.error("Please login to book a ride");
-      navigate("/login");
-      return;
-    }
 
-    const currentUser = authService.currentUser;
-    if (currentUser?.role === 'ROLE_DRIVER' || currentUser?.role === 'DRIVER') {
-      toast.error("Drivers cannot book rides. Please log in Passenger to book.");
-      return;
-    }
-
-    try {
-      // Navigate to confirmation or directly book
-      // For now, we'll just book 1 seat
-      await bookingService.bookRide(rideId, 1);
-      toast.success("Booking request sent successfully!");
-      fetchBookings(); // Refresh bookings
-      fetchRides(); // Refresh rides (seat count updates)
-    } catch (error) {
-      toast.error("Failed to book ride");
-    }
-  };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 pt-24 pb-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold text-foreground">
@@ -205,7 +192,7 @@ const Dashboard = () => {
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <RideCard ride={ride} onBook={handleBook} />
+                <RideCard ride={ride} />
               </div>
             ))}
           </div>
@@ -239,6 +226,8 @@ const Dashboard = () => {
           )}
         </div>
       )}
+
+
     </div>
   );
 };

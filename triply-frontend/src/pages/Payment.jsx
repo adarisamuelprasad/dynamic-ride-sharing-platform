@@ -10,7 +10,7 @@ const Payment = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const rideDetails = location.state?.ride;
-    const bookingDetails = location.state?.booking; // If we passed a booking object
+    const bookingDetails = location.state?.booking || location.state?.bookingDetails; // Handle both keys
 
     const [loading, setLoading] = useState(false);
     const [cardNumber, setCardNumber] = useState('');
@@ -18,8 +18,10 @@ const Payment = () => {
     const [cvc, setCvc] = useState('');
     const [cardHolder, setCardHolder] = useState('');
 
-    // Calculate total if not passed explicitly (assuming ride fare)
-    const totalAmount = rideDetails ? (rideDetails.farePerSeat * (bookingDetails?.seats || 1)) : 0;
+    // Use amount from state (from booking) or calculate from ride details
+    const totalAmount = location.state?.amount ||
+        bookingDetails?.fareAmount ||
+        (rideDetails ? (rideDetails.farePerSeat * (bookingDetails?.seats || 1)) : 0);
 
     const handleFormatCardNumber = (e) => {
         let val = e.target.value.replace(/\D/g, '');
@@ -63,7 +65,8 @@ const Payment = () => {
                     transactionId,
                     ride: rideDetails,
                     bookingId: bookingId,
-                    booking: bookingDetails
+                    booking: bookingDetails,
+                    amount: totalAmount
                 }
             });
 

@@ -238,4 +238,14 @@ public class Ride {
     public void setReviews(java.util.List<Review> reviews) {
         this.reviews = reviews;
     }
+
+    private String status = "PLANNED";
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

@@ -59,6 +59,15 @@ public class UserController {
         return ResponseEntity.ok("Password updated successfully");
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest httpReq) {
+        User user = getUserFromToken(httpReq);
+        if (user == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        return ResponseEntity.ok(user);
+    }
+
     @Autowired
     private com.triply.triplybackend.repository.VehicleRepository vehicleRepo;
 

@@ -15,6 +15,16 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { ReviewModal } from "@/components/ReviewModal";
 
@@ -25,12 +35,18 @@ const MyBookings = () => {
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewRideId, setReviewRideId] = useState(null);
     const [revieweeId, setRevieweeId] = useState(null);
+    const [cancelDialog, setCancelDialog] = useState({ open: false, bookingId: null });
     const navigate = useNavigate();
 
     const fetchBookings = async () => {
         try {
             const data = await bookingService.getMyBookings();
-            setBookings(data);
+            // Show PENDING, APPROVED, and CONFIRMED bookings
+            // Only COMPLETED/CANCELLED go to Booking History
+            const activeRequests = data.filter(b =>
+                b.status === 'PENDING' || b.status === 'APPROVED' || b.status === 'CONFIRMED'
+            );
+            setBookings(activeRequests);
         } catch (error) {
             console.error("Failed to fetch bookings", error);
         } finally {
@@ -46,28 +62,57 @@ const MyBookings = () => {
         fetchBookings();
     }, []);
 
-    const handleCancelBooking = async (bookingId) => {
-        if (!confirm("Are you sure you want to cancel this booking?")) return;
+    const handleCancelBooking = (bookingId) => {
+        setCancelDialog({ open: true, bookingId });
+    };
 
+    const confirmCancel = async () => {
+        if (!cancelDialog.bookingId) return;
         try {
-            await bookingService.cancelBooking(bookingId);
+            await bookingService.cancelBooking(cancelDialog.bookingId);
             toast.success("Booking cancelled successfully");
             fetchBookings(); // Refresh list to show updated status
         } catch (error) {
             console.error("Failed to cancel booking", error);
             toast.error("Failed to cancel booking");
+        } finally {
+            setCancelDialog({ open: false, bookingId: null });
         }
     };
 
     const handlePay = (booking) => {
         navigate('/payment', {
             state: {
+                ride: booking.ride,
                 bookingId: booking.id,
-                amount: booking.fareAmount,
-                rideId: booking.ride.id,
+                amount: booking.ride?.farePerSeat || booking.fareAmount,
+                rideDetails: booking.ride,
                 bookingDetails: booking
             }
         });
+    };
+
+    const handleViewDetails = (booking) => {
+        if (booking.status === 'CONFIRMED') {
+            // Validate required data before navigating
+            if (!booking.ride) {
+                toast.error("Ride information not found");
+                return;
+            }
+
+            // Navigate to ticket/invoice page
+            navigate('/payment-success', {
+                state: {
+                    ride: booking.ride,
+                    bookingId: booking.id,
+                    bookingDetails: booking,
+                    transactionId: booking.transactionId || 'CONFIRMED',
+                    amount: booking.ride?.farePerSeat || booking.fareAmount || 0
+                }
+            });
+        } else {
+            setSelectedBookingDetails(booking);
+        }
     };
 
     const handleRate = (booking) => {
@@ -83,10 +128,10 @@ const MyBookings = () => {
     }
 
     return (
-        <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="mx-auto max-w-6xl px-4 pt-24 pb-8">
             <div className="mb-8">
                 <h1 className="font-display text-3xl font-bold text-foreground">
-                    Requested <span className="gradient-text">Rides</span>
+                    My <span className="gradient-text">Bookings</span>
                 </h1>
                 <p className="mt-2 text-muted-foreground">
                     Manage your upcoming and past rides
@@ -104,7 +149,7 @@ const MyBookings = () => {
                             >
                                 <BookingCard
                                     booking={booking}
-                                    onViewDetails={setSelectedBookingDetails}
+                                    onViewDetails={handleViewDetails}
                                     onCancel={handleCancelBooking}
                                     onPay={handlePay}
                                     onRate={handleRate}
@@ -244,6 +289,23 @@ const MyBookings = () => {
                 rideId={reviewRideId || 0}
                 revieweeId={revieweeId || 0}
             />
+
+            <AlertDialog open={cancelDialog.open} onOpenChange={(open) => setCancelDialog(prev => ({ ...prev, open }))}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel this booking? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Yes, Cancel
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

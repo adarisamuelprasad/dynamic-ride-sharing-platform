@@ -4,6 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, Mail, Phone, Car, Plus, Save, Edit2, Trash2, XCircle, Star } from "lucide-react";
 import { toast } from "sonner";
@@ -34,28 +44,47 @@ const Profile = () => {
         extraImages: []
     });
     const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState({ open: false, vehicleId: null });
 
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
-        const currentUser = authService.currentUser;
-        if (currentUser) {
-            setUser(currentUser);
-            setProfileForm({
-                name: currentUser.name || "",
-                phone: currentUser.phone || ""
-            });
+        // ... (rest of loadData logic unchanged, lines 42-61 - but wait, I can just not repeat the whole file)
+        try {
+            const currentUser = await userService.getProfile();
+            if (currentUser) {
+                setUser(currentUser);
+                setProfileForm({
+                    name: currentUser.name || "",
+                    phone: currentUser.phone || ""
+                });
 
-            // If driver, load vehicles
-            if (currentUser.role === 'DRIVER' || currentUser.role === 'ROLE_DRIVER') {
-                try {
-                    const vData = await userService.getVehicles();
-                    setVehicles(vData);
-                } catch (error) {
-                    console.error("Failed to load vehicles", error);
+                // Update local storage to keep it somewhat fresh
+                localStorage.setItem('triply_user', JSON.stringify(currentUser));
+                authService.currentUser = currentUser;
+
+                // If driver, load vehicles
+                if (currentUser.role === 'DRIVER' || currentUser.role === 'ROLE_DRIVER') {
+                    try {
+                        const vData = await userService.getVehicles();
+                        setVehicles(vData);
+                    } catch (error) {
+                        console.error("Failed to load vehicles", error);
+                    }
                 }
+            }
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            // Fallback to local storage
+            const currentUser = authService.currentUser;
+            if (currentUser) {
+                setUser(currentUser);
+                setProfileForm({
+                    name: currentUser.name || "",
+                    phone: currentUser.phone || ""
+                });
             }
         }
     };
@@ -119,11 +148,15 @@ const Profile = () => {
         }
     };
 
-    const handleDeleteVehicle = async (id) => {
-        if (!confirm("Are you sure you want to delete this vehicle?")) return;
+    const handleDeleteVehicle = (id) => {
+        setDeleteDialog({ open: true, vehicleId: id });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteDialog.vehicleId) return;
         try {
             setLoading(true);
-            await userService.deleteVehicle(id);
+            await userService.deleteVehicle(deleteDialog.vehicleId);
             toast.success("Vehicle deleted successfully");
             // Reload vehicles
             const vData = await userService.getVehicles();
@@ -133,13 +166,14 @@ const Profile = () => {
             toast.error("Failed to delete vehicle");
         } finally {
             setLoading(false);
+            setDeleteDialog({ open: false, vehicleId: null });
         }
     };
 
     if (!user) return <div className="p-8 text-center">Loading profile...</div>;
 
     return (
-        <div className="container mx-auto max-w-4xl p-6 space-y-8 animate-fade-in">
+        <div className="container mx-auto max-w-4xl px-6 pb-6 pt-24 space-y-8 animate-fade-in">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-display font-bold">My Profile</h1>
             </div>

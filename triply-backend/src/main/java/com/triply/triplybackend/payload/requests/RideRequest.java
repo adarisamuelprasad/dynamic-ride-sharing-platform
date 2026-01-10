@@ -1,6 +1,7 @@
 package com.triply.triplybackend.payload.requests;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class RideRequest {
 
@@ -13,14 +14,20 @@ public class RideRequest {
     private Double sourceLng;
     private Double destLat;
     private Double destLng;
+    private Long vehicleId;
 
-    // Vehicle details for update/post override
+    private Boolean smokingAllowed;
+    private Boolean petsAllowed;
+    private Boolean instantBooking;
+    private Boolean maxTwoInBack;
+
+    // Optional vehicle override/update fields
     private String model;
     private String plateNumber;
     private String imageUrl;
+    private List<String> extraImages;
     private Boolean acAvailable;
     private Boolean sunroofAvailable;
-    private java.util.List<String> extraImages;
 
     public RideRequest() {
     }
@@ -97,14 +104,44 @@ public class RideRequest {
         this.destLng = destLng;
     }
 
-    private Long vehicleId;
-
     public Long getVehicleId() {
         return vehicleId;
     }
 
     public void setVehicleId(Long vehicleId) {
         this.vehicleId = vehicleId;
+    }
+
+    public Boolean getSmokingAllowed() {
+        return smokingAllowed;
+    }
+
+    public void setSmokingAllowed(Boolean smokingAllowed) {
+        this.smokingAllowed = smokingAllowed;
+    }
+
+    public Boolean getPetsAllowed() {
+        return petsAllowed;
+    }
+
+    public void setPetsAllowed(Boolean petsAllowed) {
+        this.petsAllowed = petsAllowed;
+    }
+
+    public Boolean getInstantBooking() {
+        return instantBooking;
+    }
+
+    public void setInstantBooking(Boolean instantBooking) {
+        this.instantBooking = instantBooking;
+    }
+
+    public Boolean getMaxTwoInBack() {
+        return maxTwoInBack;
+    }
+
+    public void setMaxTwoInBack(Boolean maxTwoInBack) {
+        this.maxTwoInBack = maxTwoInBack;
     }
 
     public String getModel() {
@@ -131,6 +168,14 @@ public class RideRequest {
         this.imageUrl = imageUrl;
     }
 
+    public List<String> getExtraImages() {
+        return extraImages;
+    }
+
+    public void setExtraImages(List<String> extraImages) {
+        this.extraImages = extraImages;
+    }
+
     public Boolean getAcAvailable() {
         return acAvailable;
     }
@@ -145,13 +190,5 @@ public class RideRequest {
 
     public void setSunroofAvailable(Boolean sunroofAvailable) {
         this.sunroofAvailable = sunroofAvailable;
-    }
-
-    public java.util.List<String> getExtraImages() {
-        return extraImages;
-    }
-
-    public void setExtraImages(java.util.List<String> extraImages) {
-        this.extraImages = extraImages;
     }
 }

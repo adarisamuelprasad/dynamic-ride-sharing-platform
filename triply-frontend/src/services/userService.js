@@ -6,6 +6,11 @@ export const userService = {
         return response.data;
     },
 
+    getProfile: async () => {
+        const response = await api.get("/user/me");
+        return response.data;
+    },
+
     getVehicles: async () => {
         const response = await api.get("/user/vehicles");
         return response.data;

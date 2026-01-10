@@ -15,7 +15,10 @@ import com.triply.triplybackend.repository.RideRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.time.LocalDateTime;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+@EnableScheduling
 public class TriplyBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(TriplyBackendApplication.class, args);

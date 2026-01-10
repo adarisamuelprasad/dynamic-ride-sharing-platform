@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { MapPin, Calendar, Users, IndianRupee, Car, ArrowRight, Zap, Armchair, PawPrint, Cigarette } from "lucide-react";
 import { toast } from "sonner";
+import LocationInput from "@/components/LocationInput";
 
 const PostRide = () => {
   const [form, setForm] = useState({
@@ -33,6 +34,7 @@ const PostRide = () => {
   });
   const [loading, setLoading] = useState(false);
   const [vehicles, setVehicles] = useState([]);
+  const [suggestedFare, setSuggestedFare] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +59,25 @@ const PostRide = () => {
     // Load vehicles
     loadVehicles();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchFare = async () => {
+      if (form.source && form.destination && form.source.length > 3 && form.destination.length > 3) {
+        try {
+          const data = await rideService.calculateFare(form.source, form.destination);
+          setSuggestedFare(data);
+        } catch (error) {
+          // console.error("Failed to calculate fare", error);
+          setSuggestedFare(null);
+        }
+      } else {
+        setSuggestedFare(null);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchFare, 1000); // 1s debounce
+    return () => clearTimeout(timeoutId);
+  }, [form.source, form.destination]);
 
   const loadVehicles = async () => {
     try {
@@ -125,7 +146,7 @@ const PostRide = () => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 pt-24 pb-8">
       {/* Header */}
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
@@ -174,34 +195,20 @@ const PostRide = () => {
 
             {/* Route */}
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="source" className="text-foreground">Pickup Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
-                  <Input
-                    id="source"
-                    placeholder="e.g., Mumbai Central"
-                    className="pl-10"
-                    value={form.source}
-                    onChange={(e) => update("source", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="destination" className="text-foreground">Drop-off Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
-                  <Input
-                    id="destination"
-                    placeholder="e.g., Pune Station"
-                    className="pl-10"
-                    value={form.destination}
-                    onChange={(e) => update("destination", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+              <LocationInput
+                label="Pickup Location"
+                placeholder="e.g., Mumbai Central"
+                value={form.source}
+                onChange={(val) => update("source", val)}
+                iconColor="text-primary"
+              />
+              <LocationInput
+                label="Drop-off Location"
+                placeholder="e.g., Pune Station"
+                value={form.destination}
+                onChange={(val) => update("destination", val)}
+                iconColor="text-secondary"
+              />
             </div>
 
             {/* Date & Time */}
@@ -308,10 +315,13 @@ const PostRide = () => {
             </div>
 
             {/* Suggested Fare */}
-            {form.source && form.destination && (
+            {suggestedFare && (
               <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 animate-fade-in text-yellow-700 dark:text-yellow-400">
                 <p className="text-sm">
-                  Recommended price for this route: <strong>₹300 - ₹500</strong>
+                  Recommended price for this route: <strong>₹{suggestedFare.minFare} - ₹{suggestedFare.maxFare}</strong>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Estimated Distance: {suggestedFare.distance.toFixed(1)} km
                 </p>
               </div>
             )}

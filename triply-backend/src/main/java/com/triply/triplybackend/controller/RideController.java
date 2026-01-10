@@ -94,4 +94,63 @@ public class RideController {
             return ResponseEntity.status(403).body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRide(@PathVariable Long id, HttpServletRequest httpReq) {
+        String authHeader = httpReq.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.validate(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        Long driverId = jwtUtil.getClaims(token).get("uid", Long.class);
+
+        try {
+            rideService.deleteRide(id, driverId);
+            return ResponseEntity.ok("Ride deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
+
+    @Autowired
+    private com.triply.triplybackend.service.GoogleMapsService googleMapsService;
+
+    @GetMapping("/calculate-fare")
+    public ResponseEntity<?> calculateFare(@RequestParam String source, @RequestParam String destination) {
+        try {
+            double[] sourceCoords = googleMapsService.getCoordinates(source);
+            double[] destCoords = googleMapsService.getCoordinates(destination);
+
+            if (sourceCoords == null || destCoords == null) {
+                return ResponseEntity.badRequest().body("Could not geocode locations");
+            }
+
+            double distance = googleMapsService.calculateDistance(sourceCoords[0], sourceCoords[1], destCoords[0],
+                    destCoords[1]);
+
+            double baseFare = 50.0;
+            double ratePerKm = 12.0;
+            double estimatedPrice = baseFare + (distance * ratePerKm);
+
+            // Return a range, e.g., +/- 10%
+            double min = Math.round((estimatedPrice * 0.9) / 10.0) * 10.0;
+            double max = Math.round((estimatedPrice * 1.1) / 10.0) * 10.0;
+
+            return ResponseEntity.ok(java.util.Map.of(
+                    "distance", distance,
+                    "minFare", min,
+                    "maxFare", max,
+                    "estimatedFare", Math.round(estimatedPrice)));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error calculating fare: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/autocomplete")
+    public ResponseEntity<?> autocomplete(@RequestParam String query) {
+        return ResponseEntity.ok(googleMapsService.autocomplete(query));
+    }
 }

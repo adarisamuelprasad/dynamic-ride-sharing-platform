@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/rides",
+                                "/api/stats",
                                 "/api/upload/**",
                                 "/uploads/**",
                                 "/h2-console/**",

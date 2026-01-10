@@ -20,4 +20,10 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     List<String> findDistinctDestinations();
 
     List<Ride> findByDriverId(Long driverId);
+
+    List<Ride> findByStatusAndDepartureTimeBefore(String status, LocalDateTime time);
+
+    List<Ride> findByDepartureTimeBefore(LocalDateTime time);
+
+    List<Ride> findByDepartureTimeBetween(LocalDateTime start, LocalDateTime end);
 }

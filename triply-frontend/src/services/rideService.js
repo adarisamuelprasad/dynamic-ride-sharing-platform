@@ -31,5 +31,24 @@ export const rideService = {
     async updateRide(id, rideData) {
         const response = await axios.put(`${API_BASE}/${id}`, rideData);
         return response.data;
+    },
+
+    async deleteRide(id) {
+        const response = await axios.delete(`${API_BASE}/${id}`);
+        return response.data;
+    },
+
+    async calculateFare(source, destination) {
+        const response = await axios.get(`${API_BASE}/calculate-fare`, {
+            params: { source, destination }
+        });
+        return response.data;
+    },
+
+    async autocomplete(query) {
+        const response = await axios.get(`${API_BASE}/autocomplete`, {
+            params: { query }
+        });
+        return response.data;
     }
 };

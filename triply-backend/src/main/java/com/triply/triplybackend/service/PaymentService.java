@@ -27,6 +27,15 @@ public class PaymentService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private ReportService reportService;
+
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public Payment processPayment(PaymentRequest request) {
         if (request.getBookingId() == null) {
@@ -62,6 +71,37 @@ public class PaymentService {
             Double currentBalance = driver.getWalletBalance() != null ? driver.getWalletBalance() : 0.0;
             driver.setWalletBalance(currentBalance + request.getAmount());
             userRepository.save(driver);
+        }
+
+        // 5. Send Notifications & Email
+        try {
+            // Notify Passenger
+            String msg = "Payment of ₹" + payment.getAmount() + " successful.";
+            java.util.Map<String, Object> details = new java.util.HashMap<>();
+            details.put("paymentId", payment.getId());
+            details.put("amount", payment.getAmount());
+            details.put("transactionId", transactionId);
+
+            notificationService.sendDetailedNotification(
+                    booking.getPassenger().getEmail(),
+                    "PAYMENT_SUCCESS",
+                    msg,
+                    booking.getId(),
+                    details);
+
+            // Send Ticket Email
+            byte[] ticketPdf = reportService.generateTicketPDF(payment);
+            emailService.sendTicketEmail(
+                    booking.getPassenger().getEmail(),
+                    "Triply Ticket - Payment Successful",
+                    "<h1>Payment Successful</h1><p>Your payment for ride from " + booking.getRide().getSource() + " to "
+                            + booking.getRide().getDestination()
+                            + " was successful.</p><p>Please find your ticket attached.</p>",
+                    ticketPdf);
+
+        } catch (Exception e) {
+            System.err.println("Failed to send payment notifications: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return payment;

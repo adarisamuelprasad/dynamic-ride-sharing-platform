@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-const API_URL = 'http://localhost:8082/api/payments';
+const API_URL = 'http://localhost:8081/api/payments';
 
 export const processPayment = async (bookingId, amount, paymentMethod, stripeToken = null) => {
     const user = authService.currentUser;

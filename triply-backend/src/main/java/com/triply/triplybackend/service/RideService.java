@@ -59,6 +59,11 @@ public class RideService {
             ride.setVehiclePlate(driver.getLicensePlate());
         }
 
+        ride.setSmokingAllowed(request.getSmokingAllowed());
+        ride.setPetsAllowed(request.getPetsAllowed());
+        ride.setInstantBooking(request.getInstantBooking());
+        ride.setMaxTwoInBack(request.getMaxTwoInBack());
+
         double fare = request.getFarePerSeat();
         if (fare <= 0 && request.getSourceLat() != null && request.getSourceLng() != null
                 && request.getDestLat() != null && request.getDestLng() != null) {
@@ -86,6 +91,7 @@ public class RideService {
         }
 
         return base.stream()
+                .filter(r -> r.getStatus() == null || "PLANNED".equalsIgnoreCase(r.getStatus()))
                 .filter(r -> minFare == null || r.getFarePerSeat() >= minFare)
                 .filter(r -> maxFare == null || r.getFarePerSeat() <= maxFare)
                 .filter(r -> vehicleModel == null || r.getVehicleModel() != null
@@ -145,6 +151,28 @@ public class RideService {
         if (req.getSunroofAvailable() != null)
             ride.setSunroofAvailable(req.getSunroofAvailable());
 
+        if (req.getSmokingAllowed() != null)
+            ride.setSmokingAllowed(req.getSmokingAllowed());
+        if (req.getPetsAllowed() != null)
+            ride.setPetsAllowed(req.getPetsAllowed());
+        if (req.getInstantBooking() != null)
+            ride.setInstantBooking(req.getInstantBooking());
+        if (req.getMaxTwoInBack() != null)
+            ride.setMaxTwoInBack(req.getMaxTwoInBack());
+
         return rideRepository.save(ride);
+    }
+
+    public void deleteRide(Long rideId, Long userId) {
+        Ride ride = rideRepository.findById(rideId).orElseThrow(() -> new RuntimeException("Ride not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwner = ride.getDriver().getId().equals(userId);
+        boolean isAdmin = user.getRole() == com.triply.triplybackend.model.ERole.ROLE_ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new RuntimeException("Unauthorized");
+        }
+        rideRepository.delete(ride);
     }
 }

@@ -18,16 +18,19 @@ com\triply\triplybackend\service\StripeService.class
 com\triply\triplybackend\payload\requests\UpdatePasswordRequest.class
 com\triply\triplybackend\TriplyBackendApplication.class
 com\triply\triplybackend\controller\PaymentController.class
+com\triply\triplybackend\controller\StatsController.class
 com\triply\triplybackend\controller\UserController.class
 com\triply\triplybackend\controller\FileUploadController.class
 com\triply\triplybackend\model\Review.class
 com\triply\triplybackend\config\WebSocketConfig.class
+com\triply\triplybackend\model\Notification.class
 com\triply\triplybackend\security\SecurityConfig.class
 com\triply\triplybackend\payload\requests\ReviewRequest.class
 com\triply\triplybackend\service\UserService.class
 com\triply\triplybackend\payload\PaymentRequest.class
 com\triply\triplybackend\payload\requests\AdminUpdateUserRequest.class
 com\triply\triplybackend\payload\requests\RegisterRequest.class
+com\triply\triplybackend\repository\NotificationRepository.class
 com\triply\triplybackend\repository\PaymentRepository.class
 com\triply\triplybackend\service\ReportService.class
 com\triply\triplybackend\service\PaymentService.class
@@ -51,4 +54,5 @@ com\triply\triplybackend\repository\RideRepository.class
 com\triply\triplybackend\service\ReviewService.class
 com\triply\triplybackend\service\TicketService.class
 com\triply\triplybackend\model\User.class
+com\triply\triplybackend\scheduler\RideStatusScheduler.class
 com\triply\triplybackend\service\GoogleMapsService$3.class

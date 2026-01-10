@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { authService } from "../services/authService";
+import { notificationService } from "../services/notificationService";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const location = useLocation();
@@ -41,6 +43,10 @@ const Navbar = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [passData, setPassData] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   const handlePasswordChange = (e) => {
     setPassData({ ...passData, [e.target.name]: e.target.value });
@@ -48,23 +54,23 @@ const Navbar = () => {
 
   const submitPasswordChange = async () => {
     if (!passData.oldPassword || !passData.newPassword || !passData.confirmPassword) {
-      alert("All fields are required");
+      toast.error("All fields are required");
       return;
     }
     if (passData.newPassword !== passData.confirmPassword) {
-      alert("New passwords do not match!");
+      toast.error("New passwords do not match!");
       return;
     }
 
     try {
       await authService.updatePassword(passData.oldPassword, passData.newPassword);
-      alert("Password updated successfully!");
+      toast.success("Password updated successfully!");
       setIsPasswordModalOpen(false);
       setPassData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response.data : "Failed to update password");
-      alert(msg);
+      toast.error(msg);
     }
   };
 
@@ -75,6 +81,40 @@ const Navbar = () => {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+      // Optional: Poll every minute
+      const interval = setInterval(loadNotifications, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const loadNotifications = async () => {
+    try {
+      const data = await notificationService.getUserNotifications();
+      setNotifications(data);
+      const unread = data.filter(n => !n.read).length;
+      setUnreadCount(unread);
+    } catch (error) {
+      console.error("Failed to load notifications", error);
+    }
+  };
+
+  const handleNotificationClick = async (notif) => {
+    setSelectedNotification(notif);
+    setIsNotificationModalOpen(true);
+
+    if (!notif.read) {
+      try {
+        await notificationService.markAsRead(notif.id);
+        // update local state
+        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch (e) { console.error(e) }
+    }
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -156,15 +196,14 @@ const Navbar = () => {
                 className={isActive("/my-bookings") ? "border-black dark:border-white" : ""}
                 size="sm"
               >
-                Requested Rides
+                My Bookings
               </Button>
             </Link>
           )}
           {!user?.role?.includes('ADMIN') && (
             <Link to="/post-ride">
               <Button
-                variant={isActive("/post-ride") ? "outline" : "ghost"}
-                className={isActive("/post-ride") ? "border-black dark:border-white" : ""}
+                variant="ghost"
                 size="sm"
               >
                 Offer Ride
@@ -193,10 +232,10 @@ const Navbar = () => {
                   Ride History
                 </Button>
               </Link>
-              <Link to="/requests">
+              <Link to="/driver-requests">
                 <Button
-                  variant={isActive("/requests") ? "outline" : "ghost"}
-                  className={isActive("/requests") ? "border-black dark:border-white" : ""}
+                  variant={isActive("/driver-requests") ? "outline" : "ghost"}
+                  className={isActive("/driver-requests") ? "border-black dark:border-white" : ""}
                   size="sm"
                 >
                   Requests
@@ -222,15 +261,50 @@ const Navbar = () => {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-9 h-9"
-            onClick={() => alert("Notifications feature coming soon!")}
-          >
-            <Bell className="h-4 w-4" />
-            <span className="sr-only">Notifications</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full w-9 h-9 relative"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-600 ring-1 ring-white dark:ring-black" />
+                )}
+                <span className="sr-only">Notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 max-h-[80vh] overflow-y-auto">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No new notifications
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <DropdownMenuItem
+                    key={notif.id}
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                    onClick={() => handleNotificationClick(notif)}
+                  >
+                    <div className="flex w-full justify-between items-center">
+                      <span className={`font-semibold text-sm ${!notif.read ? 'text-primary' : ''}`}>
+                        {notif.type.replace('_', ' ')}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(notif.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className={`text-xs ${!notif.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {notif.message}
+                    </p>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {user ? (
             <DropdownMenu>
@@ -377,6 +451,55 @@ const Navbar = () => {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        <Dialog open={isNotificationModalOpen} onOpenChange={setIsNotificationModalOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{selectedNotification?.type?.replace(/_/g, ' ')}</DialogTitle>
+              <DialogDescription>
+                {new Date(selectedNotification?.createdAt).toLocaleString()}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="p-3 bg-muted rounded-md text-sm">
+                {selectedNotification?.message}
+              </div>
+
+              {selectedNotification?.additionalData && (() => {
+                try {
+                  const data = JSON.parse(selectedNotification.additionalData);
+                  return (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Details:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {Object.entries(data).map(([key, value]) => (
+                          <div key={key} className="flex flex-col">
+                            <span className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                            <span className="font-medium truncate" title={value}>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                } catch (e) { return null; }
+              })()}
+
+              {selectedNotification?.type === 'RIDE_REQUEST' && (
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button onClick={() => { setIsNotificationModalOpen(false); window.location.href = '/driver-requests'; }}>
+                    View Requests
+                  </Button>
+                </div>
+              )}
+              {selectedNotification?.type.includes('PAYMENT') && (
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button onClick={() => { setIsNotificationModalOpen(false); window.location.href = '/my-bookings'; }}>
+                    View Booking
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Mobile Menu */}
@@ -399,7 +522,7 @@ const Navbar = () => {
           {(user?.role === 'PASSENGER' || user?.role === 'ROLE_PASSENGER') && (
             <Link to="/my-bookings" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">
-                Requested Rides
+                My Bookings
               </Button>
             </Link>
           )}

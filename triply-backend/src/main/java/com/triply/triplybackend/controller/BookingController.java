@@ -96,37 +96,9 @@ public class BookingController {
         booking.setSeatsBooked(bookingRequest.getSeatsBooked());
         booking.setStatus("PENDING"); // Initial status is PENDING (waiting for driver approval)
 
-        // Calculate fare
+        // Use the ride's exact farePerSeat instead of recalculating
+        // This ensures price consistency between ride card and payment
         double farePerSeat = ride.getFarePerSeat();
-        Double pLat = (bookingRequest.getPickupLat() != null && bookingRequest.getPickupLat() != 0)
-                ? bookingRequest.getPickupLat()
-                : ride.getSourceLat();
-        Double pLng = (bookingRequest.getPickupLng() != null && bookingRequest.getPickupLng() != 0)
-                ? bookingRequest.getPickupLng()
-                : ride.getSourceLng();
-        Double dLat = (bookingRequest.getDropoffLat() != null && bookingRequest.getDropoffLat() != 0)
-                ? bookingRequest.getDropoffLat()
-                : ride.getDestLat();
-        Double dLng = (bookingRequest.getDropoffLng() != null && bookingRequest.getDropoffLng() != 0)
-                ? bookingRequest.getDropoffLng()
-                : ride.getDestLng();
-
-        if (pLat != null && pLng != null && dLat != null && dLng != null) {
-            double distKm = googleMapsService.calculateDistance(pLat, pLng, dLat, dLng);
-            booking.setPickupLat(pLat);
-            booking.setPickupLng(pLng);
-            booking.setDropoffLat(dLat);
-            booking.setDropoffLng(dLng);
-            booking.setDistanceKm(distKm);
-            double calculatedFare = baseFare + (ratePerKm * distKm);
-            farePerSeat = Math.max(1.0, Math.round(calculatedFare * 100.0) / 100.0);
-        } else {
-            booking.setPickupLat(ride.getSourceLat());
-            booking.setPickupLng(ride.getSourceLng());
-            booking.setDropoffLat(ride.getDestLat());
-            booking.setDropoffLng(ride.getDestLng());
-            booking.setDistanceKm(ride.getDistanceKm());
-        }
 
         booking.setFareAmount(farePerSeat * booking.getSeatsBooked());
         booking.setPaymentMethod(
@@ -135,11 +107,16 @@ public class BookingController {
         bookingRepository.save(booking);
 
         // Notify Driver of new request
-        notificationService.sendNotification(
-                booking.getRide().getDriver().getEmail(),
-                "NEW_REQUEST",
-                "New ride request from " + booking.getPassenger().getName() + ". Please review.",
-                booking);
+        try {
+            notificationService.sendNotification(
+                    booking.getRide().getDriver().getEmail(),
+                    "NEW_REQUEST",
+                    "New ride request from " + booking.getPassenger().getName() + ". Please review.",
+                    booking);
+        } catch (Exception e) {
+            System.err.println("Failed to send notification: " + e.getMessage());
+            // Don't fail the booking if notification fails
+        }
 
         return ResponseEntity.ok(booking);
     }
@@ -230,6 +207,13 @@ public class BookingController {
 
             sendBookingConfirmationEmail(booking);
 
+            // Notify Driver
+            notificationService.sendNotification(
+                    booking.getRide().getDriver().getEmail(),
+                    "PAYMENT_SUCCESS",
+                    "Payment received (Cash) from " + booking.getPassenger().getName() + ". Ride confirmed.",
+                    booking);
+
             return ResponseEntity.ok(booking);
         }
     }
@@ -251,6 +235,13 @@ public class BookingController {
         bookingRepository.save(booking);
 
         sendBookingConfirmationEmail(booking);
+
+        // Notify Driver
+        notificationService.sendNotification(
+                booking.getRide().getDriver().getEmail(),
+                "PAYMENT_SUCCESS",
+                "Payment received (Online) from " + booking.getPassenger().getName() + ". Ride confirmed.",
+                booking);
 
         return ResponseEntity.ok(booking);
     }

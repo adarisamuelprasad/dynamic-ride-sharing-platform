@@ -107,6 +107,7 @@ public class GoogleMapsService {
             headers.set("User-Agent", "TriplyRideSharingApp/1.0");
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
+            @SuppressWarnings("null")
             ResponseEntity<List<Map<String, Object>>> responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -149,6 +150,7 @@ public class GoogleMapsService {
             headers.set("User-Agent", "TriplyRideSharingApp/1.0");
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
+            @SuppressWarnings("null")
             ResponseEntity<List<Map<String, Object>>> responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.GET,

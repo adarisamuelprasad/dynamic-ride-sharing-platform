@@ -147,6 +147,7 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private java.util.List<Vehicle> vehicles = new java.util.ArrayList<>();
 
     public java.util.List<Vehicle> getVehicles() {
