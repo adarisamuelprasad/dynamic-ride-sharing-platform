@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, User, Sun, Wind, Car, Star, MessageSquareQuote, Zap, Armchair, PawPrint, Cigarette, ChevronLeft, ChevronRight, Edit2, Plus, X, Trash2 } from "lucide-react";
+import { MapPin, Users, User, Sun, Wind, Car, Star, MessageSquareQuote, Zap, Armchair, PawPrint, Cigarette, ChevronLeft, ChevronRight, Edit2, Plus, X, Trash2, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/authService";
@@ -162,6 +162,17 @@ const RideCard = ({ ride, onBook }) => {
         } catch (error) {
             console.error("Failed to delete ride", error);
             toast.error("Failed to delete ride");
+        }
+    };
+
+    const handleCompleteRide = async () => {
+        try {
+            await rideService.updateRide(ride.id, { status: "COMPLETED" });
+            toast.success("Ride marked as completed!");
+            window.location.reload();
+        } catch (error) {
+            console.error("Failed to complete ride", error);
+            toast.error("Failed to complete ride");
         }
     };
 
@@ -400,7 +411,19 @@ const RideCard = ({ ride, onBook }) => {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
-                                <DialogTitle>Ride Details</DialogTitle>
+                                <DialogTitle className="flex justify-between items-center mr-6">
+                                    <span>Ride Details</span>
+                                    {ride.status === 'COMPLETED' && (
+                                        <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full border border-red-200">
+                                            Completed
+                                        </span>
+                                    )}
+                                    {ride.status === 'CANCELLED' && (
+                                        <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full border border-red-200">
+                                            Cancelled
+                                        </span>
+                                    )}
+                                </DialogTitle>
                                 <DialogDescription>
                                     Full information about this trip
                                 </DialogDescription>
@@ -636,10 +659,33 @@ const RideCard = ({ ride, onBook }) => {
                                                 </Button>
                                                 {/* Only Owner should Edit */}
                                                 {isOwner && (
-                                                    <Button className="flex-1" onClick={startEditing} variant="outline">
-                                                        <Edit2 className="h-4 w-4 mr-2" />
-                                                        Edit
-                                                    </Button>
+                                                    <>
+                                                        {ride.status !== 'COMPLETED' && (
+                                                            <Button className="flex-1" onClick={startEditing} variant="outline">
+                                                                <Edit2 className="h-4 w-4 mr-2" />
+                                                                Edit
+                                                            </Button>
+                                                        )}
+                                                        {ride.status === 'COMPLETED' ? (
+                                                            <Button
+                                                                className="flex-1 bg-red-100 text-red-700 border-red-200 opacity-100"
+                                                                variant="outline"
+                                                                disabled
+                                                            >
+                                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                                                Completed
+                                                            </Button>
+                                                        ) : new Date() >= departureDate ? (
+                                                            <Button
+                                                                className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-green-200"
+                                                                variant="outline"
+                                                                onClick={handleCompleteRide}
+                                                            >
+                                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                                                Complete
+                                                            </Button>
+                                                        ) : null}
+                                                    </>
                                                 )}
                                             </div>
                                         ) : (
@@ -669,6 +715,7 @@ const RideCard = ({ ride, onBook }) => {
                         </DialogContent>
                     </Dialog>
 
+                    {/* Passenger Button */}
                     {authService.currentUser?.role !== 'ROLE_ADMIN' && authService.currentUser?.role !== 'ROLE_DRIVER' && (
                         <Button
                             variant={bookingStatus === 'PENDING' ? "outline" : "gradient"}
@@ -679,6 +726,31 @@ const RideCard = ({ ride, onBook }) => {
                         >
                             {bookingStatus === 'PENDING' ? "Requested" : bookingStatus === 'APPROVED' ? "Pay Now" : "Request Ride"}
                         </Button>
+                    )}
+
+                    {/* Driver/Owner 'Complete' Button Shortcut */}
+                    {isOwner && (
+                        ride.status === 'COMPLETED' ? (
+                            <Button
+                                className="flex-1 bg-red-100 text-red-700 border-red-200 opacity-100"
+                                size="sm"
+                                variant="outline"
+                                disabled
+                            >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Completed
+                            </Button>
+                        ) : new Date() >= departureDate ? (
+                            <Button
+                                className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-green-200"
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => { e.stopPropagation(); handleCompleteRide(); }}
+                            >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Complete
+                            </Button>
+                        ) : null
                     )}
 
                     {/* Delete Verification Dialog */}

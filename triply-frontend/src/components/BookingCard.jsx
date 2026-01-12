@@ -42,7 +42,9 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }) => {
     },
   };
 
-  const status = statusConfig[booking.status] || statusConfig.PENDING;
+  const isRideCompleted = booking.ride?.status === 'COMPLETED';
+  const displayStatus = (booking.status === 'CONFIRMED' && isRideCompleted) ? 'COMPLETED' : booking.status;
+  const status = statusConfig[displayStatus] || statusConfig.PENDING;
   const StatusIcon = status.icon;
 
   return (
@@ -108,7 +110,7 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }) => {
             </Button>
           )}
 
-          {booking.status !== "CANCELLED" && booking.status !== "COMPLETED" && booking.status !== "REJECTED" && onCancel && (
+          {displayStatus !== "CANCELLED" && displayStatus !== "COMPLETED" && displayStatus !== "REJECTED" && onCancel && (
             <Button
               variant="destructive"
               size="sm"
@@ -119,7 +121,7 @@ const BookingCard = ({ booking, onCancel, onViewDetails, onRate, onPay }) => {
             </Button>
           )}
 
-          {booking.status === "COMPLETED" && onRate && (
+          {displayStatus === "COMPLETED" && onRate && (
             <Button
               variant="outline"
               size="sm"

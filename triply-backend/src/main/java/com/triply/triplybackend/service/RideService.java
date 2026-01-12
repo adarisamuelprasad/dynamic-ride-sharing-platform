@@ -22,6 +22,12 @@ public class RideService {
     @Autowired
     private com.triply.triplybackend.repository.VehicleRepository vehicleRepository;
 
+    @Autowired
+    private com.triply.triplybackend.repository.BookingRepository bookingRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
     public Ride postRide(Long driverId, RideRequest request) {
 
         User driver = userRepository.findById(driverId)
@@ -159,6 +165,28 @@ public class RideService {
             ride.setInstantBooking(req.getInstantBooking());
         if (req.getMaxTwoInBack() != null)
             ride.setMaxTwoInBack(req.getMaxTwoInBack());
+
+        if (req.getStatus() != null) {
+            ride.setStatus(req.getStatus());
+            if ("COMPLETED".equals(req.getStatus())) {
+                List<com.triply.triplybackend.model.Booking> bookings = bookingRepository.findByRide_Id(ride.getId());
+                for (com.triply.triplybackend.model.Booking b : bookings) {
+                    if ("CONFIRMED".equals(b.getStatus())) {
+                        b.setStatus("COMPLETED");
+                        bookingRepository.save(b);
+
+                        // Notify passenger (and send email)
+                        notificationService.sendDetailedNotification(
+                                b.getPassenger().getEmail(),
+                                "RIDE_COMPLETED",
+                                "Your ride from " + ride.getSource() + " to " + ride.getDestination()
+                                        + " has been marked as completed. Please rate your driver!",
+                                ride.getId(),
+                                null);
+                    }
+                }
+            }
+        }
 
         return rideRepository.save(ride);
     }
